@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/safe_area_values.dart';
-import 'package:top_snackbar_flutter/tap_bounce_container.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class DocumentPicker extends StatefulWidget {
   @override
-  _DocumentPickerState createState() => _DocumentPickerState();
+  State<DocumentPicker> createState() => _DocumentPickerState();
 }
 
 class _DocumentPickerState extends State<DocumentPicker> {

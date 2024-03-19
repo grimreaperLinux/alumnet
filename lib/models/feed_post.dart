@@ -7,16 +7,17 @@ class PostItem {
   final String text;
   List<String> images = [];
   final int likes;
-  final List<Comment> comments;
+  List<Comment> comments = [];
   final int noOfShares;
+  List<PostLink> links = [];
+  List<String> attachments = [];
 
   PostItem({
     required this.user,
     required this.timeOfCreation,
     required this.text,
-    required this.likes,
-    required this.comments,
-    required this.noOfShares,
+    this.likes = 0,
+    this.noOfShares = 0,
   });
 }
 

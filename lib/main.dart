@@ -1,8 +1,14 @@
 import 'package:alumnet/home.dart';
 import 'package:alumnet/screens/home/create_post_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -15,13 +21,8 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Alumnet',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-        ),
         home: AlumnetHome(),
-        routes: {
-          PostCreationScreen.routename: (context) => PostCreationScreen()
-        },
+        routes: {PostCreationScreen.routename: (context) => PostCreationScreen()},
       ),
     );
   }

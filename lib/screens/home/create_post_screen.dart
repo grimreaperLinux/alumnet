@@ -1,20 +1,24 @@
 import 'dart:io';
+import 'package:alumnet/models/feed_post.dart';
 import 'package:alumnet/widgets/content_input_card.dart';
 import 'package:alumnet/widgets/select_documents.dart';
 import 'package:alumnet/widgets/test_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class PostCreationScreen extends StatefulWidget {
   static const routename = "./post_creation";
+  const PostCreationScreen({super.key});
   @override
-  _PostCreationScreenState createState() => _PostCreationScreenState();
+  State<PostCreationScreen> createState() => _PostCreationScreenState();
 }
 
 class _PostCreationScreenState extends State<PostCreationScreen> {
   final ImagePicker _picker = ImagePicker();
-  List<XFile> _images = [];
+  final List<XFile> _images = [];
   final List<Map<String, TextEditingController>> _linkControllers = [
     {
       'link': TextEditingController(),
@@ -22,7 +26,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     }
   ];
   final TextEditingController _contentController = TextEditingController();
-  bool textFieldStatus = false;
+  String postContent = '';
 
   @override
   void dispose() {
@@ -66,18 +70,71 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     });
   }
 
+  void _createPost() {
+    // Performing checks
+
+    List<PostLink> links = [];
+
+    if (postContent.isEmpty) {
+      showTopSnackBar(
+        Overlay.of(context),
+        const CustomSnackBar.error(
+          message: "Content cannot be left empty. You have to save your intended content.",
+        ),
+      );
+      return;
+    }
+
+    for (Map<String, TextEditingController> linkController in _linkControllers) {
+      String placeholderText = linkController['text']!.text;
+      String linkText = linkController['link']!.text;
+
+      if (placeholderText.isEmpty && linkText.isEmpty) {
+        continue;
+      }
+
+      if (placeholderText.isEmpty || linkText.isEmpty) {
+        int index = _linkControllers.indexOf(linkController) + 1;
+        showTopSnackBar(
+          Overlay.of(context),
+          CustomSnackBar.error(
+            message: "Fill both placeholder text and link for Link number $index",
+          ),
+        );
+        return;
+      }
+
+      links.add(PostLink(link: linkText, text: placeholderText));
+    }
+  }
+
+  void liftPostContent(String content) {
+    postContent = content.isNotEmpty ? content : '';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Post'),
+        actions: [
+          IconButton.filledTonal(
+            onPressed: () {
+              _createPost();
+            },
+            icon: const Icon(Icons.check),
+            color: Colors.green,
+          )
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(15.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
-              TextInputCard(),
+              TextInputCard(
+                getContent: liftPostContent,
+              ),
               _buildImageUploadCard(),
               _buildLinkInputCard(),
               DocumentPicker()
@@ -105,8 +162,7 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8.0),
-                            child: Image.file(File(item.path),
-                                fit: BoxFit.cover, width: 1000),
+                            child: Image.file(File(item.path), fit: BoxFit.cover, width: 1000),
                           ),
                           Positioned(
                             right: -10, // Adjust the position accordingly
@@ -185,30 +241,29 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
         child: Column(
           children: [
             for (int i = 0; i < _linkControllers.length; i++)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _linkControllers[i]['link']!,
-                      decoration: const TextFieldCustom(
-                              hinttext: "Enter Link", labeltext: "Link")
-                          .textfieldDecoration(),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _linkControllers[i]['link']!,
+                        decoration: const TextFieldCustom(hinttext: "Enter Link", labeltext: "Link").textfieldDecoration(),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _linkControllers[i]['text']!,
-                      decoration: const TextFieldCustom(
-                              hinttext: "Placeholder Text", labeltext: "Text")
-                          .textfieldDecoration(),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _linkControllers[i]['text']!,
+                        decoration: const TextFieldCustom(hinttext: "Placeholder Text", labeltext: "Text").textfieldDecoration(),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.cancel),
-                    onPressed: () => _removeLinkField(i),
-                  ),
-                ],
+                    IconButton(
+                      icon: const Icon(Icons.cancel),
+                      onPressed: () => _removeLinkField(i),
+                    ),
+                  ],
+                ),
               ),
             const SizedBox(
               height: 20,

@@ -2,12 +2,15 @@ import 'package:alumnet/widgets/test_form_field.dart';
 import 'package:flutter/material.dart';
 
 class TextInputCard extends StatefulWidget {
+  final Function getContent;
+
+  const TextInputCard({required this.getContent, super.key});
   @override
-  _TextInputCardState createState() => _TextInputCardState();
+  State<TextInputCard> createState() => _TextInputCardState();
 }
 
 class _TextInputCardState extends State<TextInputCard> {
-  bool textFieldStatus = false; // Initial status of text field
+  bool textFieldStatus = false;
   final TextEditingController _contentController = TextEditingController();
 
   @override
@@ -43,6 +46,7 @@ class _TextInputCardState extends State<TextInputCard> {
                   setState(() {
                     textFieldStatus = !textFieldStatus;
                   });
+                  widget.getContent(_contentController.text);
                 },
                 child: Stack(
                   alignment: Alignment.center,
