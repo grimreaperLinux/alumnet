@@ -5,35 +5,22 @@ import 'package:rive/rive.dart' hide LinearGradient;
 import 'package:alumnet/models/tab_item.dart';
 
 class CustomTabBar extends StatefulWidget {
-  const CustomTabBar({super.key, required this.changeScreen});
+  const CustomTabBar({super.key, required this.changeScreen, required this.onTabPress, required this.selectedTab});
 
   final Function changeScreen;
+  final Function onTabPress;
+  final int selectedTab;
   @override
   State<CustomTabBar> createState() => _CustomTabBarState();
 }
 
 class _CustomTabBarState extends State<CustomTabBar> {
-  int _selectedTab = 0;
-
   void _onRiveIconInit(Artboard artboard, int index) {
     final controller = StateMachineController.fromArtboard(
         artboard, _icons[index].stateMachine);
     artboard.addController(controller!);
 
     _icons[index].status = controller.findInput<bool>("active") as SMIBool;
-  }
-
-  void onTabPress(index) {
-    if (_selectedTab != index) {
-      setState(() {
-        _selectedTab = index;
-      });
-      widget.changeScreen(index);
-      _icons[index].status!.change(true);
-      Future.delayed(const Duration(seconds: 1), () {
-        _icons[index].status!.change(false);
-      });
-    }
   }
 
   final List<TabItem> _icons = TabItem.tabItemList;
@@ -74,10 +61,10 @@ class _CustomTabBarState extends State<CustomTabBar> {
                   child: CupertinoButton(
                     padding: const EdgeInsets.all(12),
                     onPressed: () {
-                      onTabPress(index);
+                      widget.onTabPress(index);
                     },
                     child: AnimatedOpacity(
-                      opacity: _selectedTab == index ? 1 : 0.5,
+                      opacity: widget.selectedTab == index ? 1 : 0.5,
                       duration: const Duration(milliseconds: 200),
                       child: SizedBox(
                         height: 36,
