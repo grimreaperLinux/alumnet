@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../models/user.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -9,6 +10,8 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  User currentUser = User(batch: '2024',username: "chirag",name:"chirag",about: "Somrthing",profilepic: 'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -38,8 +41,7 @@ class _ProfileState extends State<Profile> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: NetworkImage(
-                              'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=') // Replace with your image
+                          backgroundImage: NetworkImage(currentUser.profilepic) // Replace with your image
                           ),
                     ),
                   ],
@@ -58,7 +60,7 @@ class _ProfileState extends State<Profile> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Chirag Mittal",
+                        "${currentUser.name}",
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 30,
@@ -89,14 +91,14 @@ class _ProfileState extends State<Profile> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 1),
                     child: Text(
-                      '@chiragmittal',
+                      '@${currentUser.username}',
                       style: TextStyle(color: Colors.grey, fontSize: 15),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 1),
                     child: Text(
-                      'This is a long text that will overflow the screen if it is too long.',
+                      '${currentUser.about}',
                       style: TextStyle(color: Colors.black, fontSize: 15),
                       overflow: TextOverflow
                           .ellipsis, // Display ellipsis when overflowing
@@ -113,7 +115,7 @@ class _ProfileState extends State<Profile> {
                           child: Icon(Icons.calendar_month),
                         ),
                         Text(
-                          'Batch 2024',
+                          'Batch ${currentUser.batch}',
                           style: TextStyle(color: Colors.grey, fontSize: 15),
                         ),
                       ],
