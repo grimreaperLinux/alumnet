@@ -2,6 +2,7 @@ import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
 import 'package:alumnet/constants/text_strings.dart';
 import 'package:alumnet/features/auth/screens/login/login.dart';
+import 'package:alumnet/features/auth/screens/signup/signup.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -50,7 +51,7 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => Get.to(() => const SignUpScreen()),
                     style: Theme.of(context).elevatedButtonTheme.style,
                     child: Text(
                       tSignUp.toUpperCase(),
