@@ -50,3 +50,5 @@ const String tEmail = "Email";
 const String tForgetPassword = "Forget user ID or password?";
 
 const String tUserId = "Institute ID";
+
+const String tName = "Full Name";
