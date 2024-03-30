@@ -1,6 +1,7 @@
 import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
 import 'package:alumnet/constants/text_strings.dart';
+import 'package:alumnet/features/auth/controllers/login_controller.dart';
 import 'package:alumnet/features/auth/screens/forgot_password/forgot_id_mail.dart';
 import 'package:alumnet/features/auth/screens/forgot_password/forgot_password_mail.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +13,8 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final controller = Get.put(LoginController());
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -44,6 +46,7 @@ class LoginScreen extends StatelessWidget {
                   Text(tLogin, style: Theme.of(context).textTheme.headline1),
                   // Section 2
                   Form(
+                    key: _formKey,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: tFormHeight - 10),
@@ -51,6 +54,7 @@ class LoginScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextFormField(
+                            controller: controller.id,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.person),
                               labelText: tUserId,
@@ -60,6 +64,7 @@ class LoginScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            controller: controller.password,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.lock),
                               labelText: tPassword,
@@ -75,7 +80,13 @@ class LoginScreen extends StatelessWidget {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  LoginController.instance.logInUser(
+                                      controller.id.text.trim(),
+                                      controller.password.text.trim());
+                                }
+                              },
                               child: Text(tLogin.toUpperCase()),
                             ),
                           ),

@@ -1,6 +1,7 @@
 import 'package:alumnet/models/tab_item.dart';
 import 'package:alumnet/models/user.dart';
 import 'package:alumnet/navigation/custom_tab_bar.dart';
+import 'package:alumnet/repository/auth_repo/auth_repo.dart';
 import 'package:alumnet/profile/profile_screen.dart';
 import 'package:alumnet/screens/community_screen.dart';
 import 'package:alumnet/screens/home/home_screen.dart';
@@ -60,6 +61,12 @@ class _AlumnetHomeState extends State<AlumnetHome> {
     return Scaffold(
       body: Column(
         children: [
+            ElevatedButton(
+                onPressed: () {
+                  // Handle logout action
+                  AuthRepo.instance.logout();
+                },
+                child: Text('Logout')),
           Padding(
             padding: const EdgeInsets.all(10),
             child: Row(

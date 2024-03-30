@@ -1,6 +1,7 @@
 import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
 import 'package:alumnet/constants/text_strings.dart';
+import 'package:alumnet/features/auth/controllers/signup_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:alumnet/features/auth/screens/login/login.dart';
@@ -9,7 +10,8 @@ class SignUpScreen extends StatelessWidget {
   const SignUpScreen({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final controller = Get.put(SignUpController());
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -41,6 +43,7 @@ class SignUpScreen extends StatelessWidget {
                   Text(tSignUp, style: Theme.of(context).textTheme.headline1),
                   // Section 2
                   Form(
+                    key: _formKey,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           vertical: tFormHeight - 10),
@@ -48,6 +51,7 @@ class SignUpScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextFormField(
+                            controller: controller.fullName,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.person),
                               labelText: tName,
@@ -57,6 +61,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            controller: controller.email,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.email),
                               labelText: tEmail,
@@ -66,6 +71,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            controller: controller.id,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.numbers),
                               labelText: tUserId,
@@ -75,6 +81,7 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            controller: controller.password,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.lock),
                               labelText: tPassword,
@@ -90,7 +97,13 @@ class SignUpScreen extends StatelessWidget {
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  SignUpController.instance.registerUser(
+                                      controller.email.text.trim(),
+                                      controller.password.text.trim());
+                                }
+                              },
                               child: Text(tSignUp.toUpperCase()),
                             ),
                           ),
@@ -107,10 +120,10 @@ class SignUpScreen extends StatelessWidget {
                                     TextSpan(
                                       text: tLogin,
                                       style: TextStyle(color: Colors.blue),
-                                    ) // TextSpan
+                                    ) 
                                   ],
-                                ), // TextSpan
-                              ), // Text.rich
+                                ),
+                              ),
                             ),
                           )
                         ],
