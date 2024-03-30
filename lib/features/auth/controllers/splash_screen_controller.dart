@@ -1,4 +1,5 @@
 // import 'package:alumnet/features/auth/screens/welcome/welcome.dart';
+import 'package:alumnet/features/auth/screens/welcome/welcome.dart';
 import 'package:get/get.dart';
 import 'package:alumnet/home.dart';
 
@@ -11,6 +12,6 @@ class SplashScreenController extends GetxController {
     await Future.delayed(const Duration(milliseconds: 500));
     animate.value = true;
     await Future.delayed(const Duration(seconds: 5));
-    Get.to(AlumnetHome());
+    Get.to(WelcomeScreen());
   }
 }

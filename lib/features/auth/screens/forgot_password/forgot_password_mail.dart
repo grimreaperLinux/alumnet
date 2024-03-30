@@ -2,6 +2,7 @@ import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:alumnet/constants/text_strings.dart';
+import 'package:get/get.dart';
 
 class ForgotPasswordEmail extends StatelessWidget {
   const ForgotPasswordEmail({Key? key}) : super(key: key);
@@ -17,7 +18,7 @@ class ForgotPasswordEmail extends StatelessWidget {
                 top: 25,
                 left: 5,
                 child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => Get.back(),
                   icon: const Icon(Icons.arrow_back),
                 ),
               ),
