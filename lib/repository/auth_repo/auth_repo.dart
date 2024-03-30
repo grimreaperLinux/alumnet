@@ -30,8 +30,13 @@ class AuthRepo extends GetxController {
       await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
     } on FirebaseAuthException catch (e) {
-    } catch (_) {
-      Get.snackbar('Error', _.toString());
+      final ex = SignUpFailure.code(e.code);
+      Get.snackbar('Error', ex.message);
+      throw ex;
+    } catch (e) {
+      const ex = SignUpFailure();
+      Get.snackbar('Error', ex.message);
+      throw ex;
     }
   }
 
@@ -42,14 +47,9 @@ class AuthRepo extends GetxController {
       firebaseUser.value != null
           ? Get.offAll(() => AlumnetHome())
           : Get.to(() => WelcomeScreen());
-    } on FirebaseAuthException catch (e) {
-      final ex = SignUpFailure.code(e.code);
-      Get.snackbar('Error', ex.message);
-      throw ex;
     } catch (_) {
-      const ex = SignUpFailure();
-      Get.snackbar('Error', ex.message);
-      throw ex;
+      Get.snackbar('Error', "Invalid id or password");
+      throw _;
     }
   }
 
@@ -60,4 +60,5 @@ class AuthRepo extends GetxController {
       Get.snackbar('Error', _.toString());
     }
   }
+
 }
