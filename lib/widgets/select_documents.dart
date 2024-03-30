@@ -5,6 +5,9 @@ import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class DocumentPicker extends StatefulWidget {
+  final Function getSelectedDocuments;
+
+  const DocumentPicker({super.key, required this.getSelectedDocuments});
   @override
   State<DocumentPicker> createState() => _DocumentPickerState();
 }
@@ -56,6 +59,7 @@ class _DocumentPickerState extends State<DocumentPicker> {
             if (file.lengthSync() <= 10 * 1024 * 1024) {
               _documents.add(file);
               _filenames.add(getFileName(file) as String);
+              widget.getSelectedDocuments(_documents, _filenames);
             } else {
               showTopSnackBar(
                 Overlay.of(context),
@@ -78,6 +82,7 @@ class _DocumentPickerState extends State<DocumentPicker> {
       _documents.removeAt(index);
       _filenames.removeAt(index);
     });
+    widget.getSelectedDocuments(_documents, _filenames);
   }
 
   @override
@@ -111,8 +116,7 @@ class _DocumentPickerState extends State<DocumentPicker> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.insert_drive_file,
-                              color: Colors.redAccent),
+                          const Icon(Icons.insert_drive_file, color: Colors.redAccent),
                           const SizedBox(width: 10),
                           Text(
                             _filenames[index],

@@ -1,8 +1,10 @@
 import 'package:alumnet/home.dart';
+import 'package:alumnet/models/feed_post.dart';
 import 'package:alumnet/screens/home/create_post_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,12 +19,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: MaterialApp(
-        title: 'Alumnet',
-        debugShowCheckedModeBanner: false,
-        home: AlumnetHome(),
-        routes: {PostCreationScreen.routename: (context) => PostCreationScreen()},
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => PostList()),
+      ],
+      child: SafeArea(
+        child: MaterialApp(
+          title: 'Alumnet',
+          debugShowCheckedModeBanner: false,
+          home: const AlumnetHome(),
+          routes: {PostCreationScreen.routename: (context) => PostCreationScreen()},
+        ),
       ),
     );
   }
