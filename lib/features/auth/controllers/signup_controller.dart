@@ -14,29 +14,39 @@ class SignUpController extends GetxController {
 
   final userRepo = Get.put(UserRepo());
 
-  Future<void> registerUser(String email, String password) async {
-    String? error = await AuthRepo.instance
-        .createUserWithEmailAndPassword(email, password) as String?;
-
-    if (error != null) {
-      // Get.showSnackbar(GetSnackBar(
-      //   message: error.toString(),
-      // ));
-      throw error;
-    }
-  }
-
-  Future<void> createUser(UserModel user) async {
+  Future<void> createUser(UserModel usermodel) async {
     try {
-      await registerUser(user.email, user.password);
-      await userRepo.instance.createUser(UserModel(
-        email: email.text,
-        password: password.text,
-        fullName: fullName.text,
-        instituteId: id.text,
-      ));
+      Future<Map<String, dynamic>?> user1 =
+          AuthRepo.instance.getUserById(usermodel.instituteId);
+      Future<Map<String, dynamic>?> user2 =
+          AuthRepo.instance.getUserByEmail(usermodel.email);
+      user2.then((value) async {
+        if (value != null) {
+          Get.snackbar('Error', 'User with Email already exists');
+          return;
+        } else {
+          user1.then((value) async {
+            if (value == null) {
+              await userRepo.instance.createUser(UserModel(
+                email: email.text,
+                fullName: fullName.text,
+                instituteId: id.text,
+                password: password.text,
+              ));
+              String? error = await AuthRepo.instance
+                  .createUserWithEmailAndPassword(
+                      usermodel.email, usermodel.password) as String?;
+              if (error != null) {
+                throw error;
+              }
+            } else {
+              Get.snackbar('Error', 'User with Institute Id already exists');
+            }
+          });
+        }
+      });
     } catch (e) {
-      print(e.toString());
+      Get.snackbar('Error', e.toString());
     }
   }
 }

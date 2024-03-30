@@ -53,9 +53,9 @@ const String tUserId = "Institute ID";
 
 const String tName = "Full Name";
 
-const String tIdViaEmail = "Get ID via Mail";
+const String tIdViaEmail = "Get ID";
 
-const String tResetPassword = "Reset Password";
+const String tResetPassword = "Send Password Link";
 
 const String forgotPasswordTitle = "Enter your registered E-Mail";
 
