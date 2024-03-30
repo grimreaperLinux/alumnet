@@ -42,6 +42,15 @@ dependencies:
   file_picker: ^6.2.0
   top_snackbar_flutter: ^3.1.0
   firebase_core: ^2.27.1
+  firebase_storage: ^11.6.10
+  cloud_firestore: ^4.15.9
+  loading_animation_widget: ^1.2.1
+  provider: ^6.1.2
+  intl: ^0.19.0
+  timeago: ^3.6.1
+  syncfusion_flutter_pdfviewer: ^24.2.8
+  path_provider: ^2.1.2
+  dio: ^5.4.1
 
 dev_dependencies:
   flutter_test:
