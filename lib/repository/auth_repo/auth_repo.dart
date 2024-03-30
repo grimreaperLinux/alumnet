@@ -130,4 +130,31 @@ class AuthRepo extends GetxController {
       Get.snackbar('Error', 'Error fetching user data: $error');
     });
   }
+
+
+  Future<Map<String, dynamic>?> getUserByIdEmail(
+      String id, String email) async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('instituteId', isEqualTo: id)
+          .where('email', isEqualTo: email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        return userData;
+      } else {
+        print('User not found with id: $id');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+      return null;
+    }
+  }
+
 }
+
+
+

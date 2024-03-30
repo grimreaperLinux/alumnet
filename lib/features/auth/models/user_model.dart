@@ -16,7 +16,6 @@ class UserModel {
       'instituteId': instituteId,
       'fullName': fullName,
       'email': email,
-      'password': password,
     };
   }
 }
