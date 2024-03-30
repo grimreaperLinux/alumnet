@@ -32,7 +32,7 @@ const String tAlreadyHaveAnAccount = "Already have an Account? ";
 const String tForgetPasswordTitle = "Make Selection!";
 const String tForgetPasswordSubTitle =
     "Select one of the options given below to reset your password.";
-const String tResetViaEMail = "Reset via Mail Verification";
+const String tResetViaEMail = "Reset Password via Mail";
 const String tResetViaPhone = "Reset via Phone Verification";
 
 // -- Forget Password Via Phone - Text
@@ -52,3 +52,11 @@ const String tForgetPassword = "Forget user ID or password?";
 const String tUserId = "Institute ID";
 
 const String tName = "Full Name";
+
+const String tIdViaEmail = "Get ID via Mail";
+
+const String tResetPassword = "Reset Password";
+
+const String forgotPasswordTitle = "Enter your registered E-Mail";
+
+const String forgotIdTitle = "Enter your registered E-Mail";
