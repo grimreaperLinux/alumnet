@@ -60,3 +60,7 @@ const String tResetPassword = "Reset Password";
 const String forgotPasswordTitle = "Enter your registered E-Mail";
 
 const String forgotIdTitle = "Enter your registered E-Mail";
+
+const String tFullNameCannotBeEmpty = "Full Name cannot be empty";
+
+const String tEmailCannotBeEmpty = "Email cannot be empty";

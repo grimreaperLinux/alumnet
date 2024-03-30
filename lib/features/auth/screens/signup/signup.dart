@@ -2,6 +2,7 @@ import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
 import 'package:alumnet/constants/text_strings.dart';
 import 'package:alumnet/features/auth/controllers/signup_controller.dart';
+import 'package:alumnet/features/auth/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:alumnet/features/auth/screens/login/login.dart';
@@ -52,6 +53,8 @@ class SignUpScreen extends StatelessWidget {
                         children: [
                           TextFormField(
                             controller: controller.fullName,
+                            validator: (value) =>
+                                value!.isEmpty ? tFullNameCannotBeEmpty : null,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.person),
                               labelText: tName,
@@ -61,6 +64,15 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return tEmailCannotBeEmpty;
+                              }
+                              if (!GetUtils.isEmail(value)) {
+                                return "Invalid Email";
+                              }
+                              return null;
+                            },
                             controller: controller.email,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.email),
@@ -71,6 +83,9 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            validator: (value) => value!.isEmpty
+                                ? "Institute ID cannot be empty"
+                                : null,
                             controller: controller.id,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.numbers),
@@ -81,16 +96,15 @@ class SignUpScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            validator: (value) => value!.isEmpty
+                                ? "Password cannot be empty"
+                                : null,
                             controller: controller.password,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.lock),
                               labelText: tPassword,
                               hintText: tPassword,
                               border: OutlineInputBorder(),
-                              suffixIcon: IconButton(
-                                icon: Icon(Icons.visibility),
-                                onPressed: () {},
-                              ),
                             ),
                           ),
                           const SizedBox(height: tFormHeight - 10),
@@ -98,10 +112,14 @@ class SignUpScreen extends StatelessWidget {
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
+                                final user = UserModel(
+                                  email: controller.email.text.trim(),
+                                  password: controller.password.text.trim(),
+                                  fullName: controller.fullName.text.trim(),
+                                  instituteId: controller.id.text.trim(),
+                                );
                                 if (_formKey.currentState!.validate()) {
-                                  SignUpController.instance.registerUser(
-                                      controller.email.text.trim(),
-                                      controller.password.text.trim());
+                                  SignUpController.instance.createUser(user);
                                 }
                               },
                               child: Text(tSignUp.toUpperCase()),
@@ -120,7 +138,7 @@ class SignUpScreen extends StatelessWidget {
                                     TextSpan(
                                       text: tLogin,
                                       style: TextStyle(color: Colors.blue),
-                                    ) 
+                                    )
                                   ],
                                 ),
                               ),
@@ -133,8 +151,7 @@ class SignUpScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ]
-          ),
+          ]),
         ),
       ),
     );

@@ -70,10 +70,6 @@ class LoginScreen extends StatelessWidget {
                               labelText: tPassword,
                               hintText: tPassword,
                               border: OutlineInputBorder(),
-                              suffixIcon: IconButton(
-                                icon: Icon(Icons.visibility),
-                                onPressed: () {},
-                              ),
                             ),
                           ),
                           const SizedBox(height: tFormHeight - 10),
