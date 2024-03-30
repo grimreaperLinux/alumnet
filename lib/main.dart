@@ -1,6 +1,7 @@
 import 'package:alumnet/features/auth/screens/on_boarding/on_boarding_screen.dart';
 import 'package:alumnet/features/auth/screens/on_boarding/onboarding_page.dart';
 import 'package:alumnet/features/auth/screens/splash_screen/splash_screen.dart';
+import 'package:alumnet/features/auth/screens/welcome/welcome.dart';
 import 'package:alumnet/home.dart';
 import 'package:alumnet/repository/auth_repo/auth_repo.dart';
 import 'package:alumnet/models/feed_post.dart';
