@@ -9,6 +9,6 @@ class LoginController extends GetxController {
   final id = TextEditingController();
 
   void logInUser(String id, String password) {
-    AuthRepo.instance.loginUserWithEmailAndPassword(id, password);
+    AuthRepo.instance.loginWithIdAndPassword(id, password);
   }
 }

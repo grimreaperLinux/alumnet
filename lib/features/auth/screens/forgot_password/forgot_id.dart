@@ -1,5 +1,6 @@
 import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
+import 'package:alumnet/features/auth/controllers/forgot_id_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:alumnet/constants/text_strings.dart';
 import 'package:get/get.dart';
@@ -9,6 +10,8 @@ class ForgotIdEmail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ForgotIdController());
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -39,6 +42,7 @@ class ForgotIdEmail extends StatelessWidget {
                     Text(forgotIdTitle,
                         style: Theme.of(context).textTheme.headline3),
                     Form(
+                      key: _formKey,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             vertical: tFormHeight - 10),
@@ -46,6 +50,16 @@ class ForgotIdEmail extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             TextFormField(
+                              controller: controller.email,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return tEmailCannotBeEmpty;
+                                }
+                                if (!GetUtils.isEmail(value)) {
+                                  return "Invalid Email";
+                                }
+                                return null;
+                              },
                               decoration: InputDecoration(
                                 prefixIcon: const Icon(Icons.email),
                                 labelText: tEmail,
@@ -57,7 +71,12 @@ class ForgotIdEmail extends StatelessWidget {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    controller
+                                        .forgotId(controller.email.text.trim());
+                                  }
+                                },
                                 child: Text(tIdViaEmail),
                               ),
                             ),
