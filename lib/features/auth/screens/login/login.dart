@@ -2,7 +2,7 @@ import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/sizes.dart';
 import 'package:alumnet/constants/text_strings.dart';
 import 'package:alumnet/features/auth/controllers/login_controller.dart';
-import 'package:alumnet/features/auth/screens/forgot_password/forgot_id_mail.dart';
+import 'package:alumnet/features/auth/screens/forgot_password/forgot_id.dart';
 import 'package:alumnet/features/auth/screens/forgot_password/forgot_password_mail.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -54,6 +54,9 @@ class LoginScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           TextFormField(
+                            validator: (value) => value!.isEmpty
+                                ? "Institute Id cannot be empty"
+                                : null,
                             controller: controller.id,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.person),
@@ -64,6 +67,12 @@ class LoginScreen extends StatelessWidget {
                           ),
                           SizedBox(height: tFormHeight - 20),
                           TextFormField(
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Password cannot be empty";
+                              }
+                              return null;
+                            },
                             controller: controller.password,
                             decoration: InputDecoration(
                               prefixIcon: Icon(Icons.lock),
@@ -120,7 +129,7 @@ class LoginScreen extends StatelessWidget {
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
                                               color: Colors.grey.shade200,
-                                            ), // BoxDecoration
+                                            ), 
                                             child: Row(
                                               children: [
                                                 const Icon(
@@ -154,7 +163,7 @@ class LoginScreen extends StatelessWidget {
                                               borderRadius:
                                                   BorderRadius.circular(10.0),
                                               color: Colors.grey.shade200,
-                                            ), // BoxDecoration
+                                            ),
                                             child: Row(
                                               children: [
                                                 const Icon(Icons.person,
