@@ -61,17 +61,18 @@ class _AlumnetHomeState extends State<AlumnetHome> {
     return Scaffold(
       body: Column(
         children: [
-            ElevatedButton(
-                onPressed: () {
-                  // Handle logout action
-                  AuthRepo.instance.logout();
-                },
-                child: Text('Logout')),
+            
           Padding(
             padding: const EdgeInsets.all(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                ElevatedButton(
+                onPressed: () {
+                  // Handle logout action
+                  AuthRepo.instance.logout();
+                },
+                    child: Text('Logout')),
                 Container(
                   child: GestureDetector(
                     child: CircleAvatar(
