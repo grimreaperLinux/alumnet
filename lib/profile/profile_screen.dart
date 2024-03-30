@@ -10,7 +10,7 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  User currentUser = User(batch: '2024',username: "chirag",name:"chirag",about: "Somrthing",profilepic: 'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',);
+  User currentUser = User(id: '45', batch: '2024',username: "chirag",name:"chirag",about: "Somrthing",profilepic: 'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',branch: 'DSAI');
 
   @override
   Widget build(BuildContext context) {

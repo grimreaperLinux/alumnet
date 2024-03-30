@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../models/user.dart';
 
@@ -13,23 +14,22 @@ class Message {
   });
 }
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   final User currentUser;
+  final String chatId;
   final User chattingWithUser;
+  ChatScreen(
+      {super.key,
+      required this.chattingWithUser,
+      required this.currentUser,
+      required this.chatId});
 
-  ChatScreen({super.key, required this.chattingWithUser, required this.currentUser});
-  final List<Message> messages = [
-    Message(
-      messageBody: 'Hello!',
-      sentBy: 'aniket',
-      sentAt: DateTime.now().subtract(const Duration(hours: 1)),
-    ),
-    Message(
-      messageBody: 'Hi, how are you?',
-      sentBy: 'chirag',
-      sentAt: DateTime.now(),
-    )
-  ];
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  var _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,8 @@ class ChatScreen extends StatelessWidget {
             CircleAvatar(
               radius: 16,
               backgroundImage: NetworkImage(
-                  chattingWithUser.profilepic), // Replace with the avatar image URL
+                widget.chattingWithUser.profilepic,
+              ), // Replace with the avatar image URL
             ),
             const SizedBox(width: 8),
             Column(
@@ -55,16 +56,15 @@ class ChatScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  chattingWithUser.name, // Replace with the name of the person you're chatting with
+                  widget.chattingWithUser
+                      .name, // Replace with the name of the person you're chatting with
                   style: const TextStyle(fontSize: 16),
                 )
               ],
             ),
           ],
         ),
-        actions: [
-          Image.asset('assets/Images/cgc.jpeg')
-        ],
+        actions: [Image.asset('assets/Images/cgc.jpeg')],
       ),
       body: Column(
         children: [
@@ -73,29 +73,64 @@ class ChatScreen extends StatelessWidget {
             thickness: 1,
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                final bool isCurrentUser = message.sentBy == currentUser.username;
-                final bool isLastMessage = index == messages.length - 1 ||
-                    messages[index + 1].sentBy != message.sentBy;
-                return ChatMessageBubble(
-                  message: message.messageBody,
-                  sentByCurrentUser: isCurrentUser,
-                  sentAt: message.sentAt,
-                  isLastMessage: isLastMessage,
-                  currentUserImage: currentUser.profilepic,
-                  chattingWithUserImage: chattingWithUser.profilepic
+              child: StreamBuilder(
+            stream: FirebaseFirestore.instance
+                .collection('messages')
+                .where('chatId', isEqualTo: widget.chatId)
+                .orderBy('sentAt', descending: false)
+                .snapshots(),
+            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              }
+              print(snapshot.hasData);
+              print(snapshot.data!.docs.isEmpty);
+
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return Center(
+                  child: Text('Start Typing and start the chat.'),
                 );
-              },
-            ),
-          ),
+              }
+
+              return ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (context, index) {
+                  final listItem = snapshot.data!.docs[index];
+                  final bool isCurrentUser =
+                      listItem['sentBy'] == widget.currentUser.id;
+                  final bool isLastMessage =
+                      index == snapshot.data!.docs.length - 1 ||
+                          snapshot.data!.docs[index + 1]['sentBy'] !=
+                              listItem['sentBy'];
+                  
+                  // print('------------------------');
+                  // print(listItem['messageBody']);
+                  // print(isCurrentUser);
+                  // print(listItem['sentAt'].toDate());
+                  // print(isLastMessage);
+                  // print(widget.currentUser.profilepic);
+                  // print(widget.chattingWithUser.profilepic);
+                  // print('------------------------');
+                  return ChatMessageBubble(
+                    message: listItem['messageBody'],
+                    sentByCurrentUser: isCurrentUser,
+                    sentAt: listItem['sentAt'].toDate(),
+                    isLastMessage: isLastMessage,
+                    currentUserImage: widget.currentUser.profilepic,
+                    chattingWithUserImage: widget.chattingWithUser.profilepic,
+                  );
+                },
+              );
+            },
+          )),
           const Divider(
             color: Colors.grey,
             thickness: 1,
           ),
-          SendMessageField(),
+          SendMessageField(
+            chatId: widget.chatId,
+            currentUserId: widget.currentUser.id,
+          ),
         ],
       ),
     );
@@ -126,7 +161,10 @@ class ChatMessageBubble extends StatelessWidget {
       crossAxisAlignment:
           sentByCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        if (!sentByCurrentUser && isLastMessage) ProfileImage(profileImage: chattingWithUserImage,),
+        if (!sentByCurrentUser && isLastMessage)
+          ProfileImage(
+            profileImage: chattingWithUserImage,
+          ),
         Container(
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           padding: const EdgeInsets.all(12),
@@ -151,7 +189,10 @@ class ChatMessageBubble extends StatelessWidget {
             ],
           ),
         ),
-        if (sentByCurrentUser && isLastMessage) ProfileImage(profileImage: currentUserImage,),
+        if (sentByCurrentUser && isLastMessage)
+          ProfileImage(
+            profileImage: currentUserImage,
+          ),
       ],
     );
   }
@@ -184,13 +225,62 @@ class ProfileImage extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: CircleAvatar(
         radius: 16,
-        backgroundImage: NetworkImage(profileImage), // Add your profile image URL here
+        backgroundImage:
+            NetworkImage(profileImage), // Add your profile image URL here
       ),
     );
   }
 }
 
-class SendMessageField extends StatelessWidget {
+class SendMessageField extends StatefulWidget {
+  final String chatId;
+  final String currentUserId;
+  SendMessageField({required this.chatId, required this.currentUserId});
+
+  @override
+  State<SendMessageField> createState() => _SendMessageFieldState();
+}
+
+class _SendMessageFieldState extends State<SendMessageField> {
+  TextEditingController _controller = TextEditingController();
+  var _isSending = false;
+  Future<void> _sendMessageHelper() async {
+    String message = _controller.text;
+    setState(() {
+      _isSending=true;
+    });
+    if (message.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Message Body Cannot be empty'),
+        ),
+      );
+    } else {
+      try {
+        FirebaseFirestore.instance.collection('messages').add({
+          'chatId': widget.chatId,
+          'messageBody': message,
+          'sentBy': widget.currentUserId,
+          'sentAt': DateTime.now()
+        });
+
+        FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({'lastMessage':message, 'lastMessageTime': DateTime.now()});
+      } catch (e) {
+        print(e);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Something went wrong, could not send'),
+          ),
+        );
+      }
+    }
+
+    _controller.clear();
+    setState(() {
+      _isSending = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -199,6 +289,7 @@ class SendMessageField extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
+              controller: _controller,
               decoration: InputDecoration(
                 hintText: 'Type a message...',
                 border: OutlineInputBorder(
@@ -209,12 +300,12 @@ class SendMessageField extends StatelessWidget {
             ),
           ),
           SizedBox(width: 10),
-          IconButton(
+          !_isSending?IconButton(
             onPressed: () {
-              // Handle sending message
+              _sendMessageHelper();
             },
             icon: Icon(Icons.send),
-          ),
+          ):CircularProgressIndicator(),
         ],
       ),
     );
