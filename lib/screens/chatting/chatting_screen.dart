@@ -102,15 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       index == snapshot.data!.docs.length - 1 ||
                           snapshot.data!.docs[index + 1]['sentBy'] !=
                               listItem['sentBy'];
-                  
-                  // print('------------------------');
-                  // print(listItem['messageBody']);
-                  // print(isCurrentUser);
-                  // print(listItem['sentAt'].toDate());
-                  // print(isLastMessage);
-                  // print(widget.currentUser.profilepic);
-                  // print(widget.chattingWithUser.profilepic);
-                  // print('------------------------');
+    
                   return ChatMessageBubble(
                     message: listItem['messageBody'],
                     sentByCurrentUser: isCurrentUser,
@@ -264,7 +256,7 @@ class _SendMessageFieldState extends State<SendMessageField> {
           'sentAt': DateTime.now()
         });
 
-        FirebaseFirestore.instance.collection('chats').doc(widget.chatId).update({'lastMessage':message, 'lastMessageTime': DateTime.now()});
+        FirebaseFirestore.instance.collection('chat').doc(widget.chatId).update({'lastMessage':message, 'lastMessageTime': DateTime.now()});
       } catch (e) {
         print(e);
         ScaffoldMessenger.of(context).showSnackBar(
