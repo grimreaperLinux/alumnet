@@ -1,5 +1,12 @@
+import 'dart:io';
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user.dart';
 
 class Profile extends StatefulWidget {
@@ -10,7 +17,15 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  User currentUser = User(id: '45', batch: '2024',username: "chirag",name:"chirag",about: "Somrthing",profilepic: 'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',branch: 'DSAI');
+  User currentUser = User(
+      id: '8BICx4WqZatmhFNsgmDZ',
+      batch: '2024',
+      username: "20bds016",
+      name: "Chirag",
+      about: "Hello User",
+      profilepic:
+          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+      branch: 'DSAI');
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +56,9 @@ class _ProfileState extends State<Profile> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: NetworkImage(currentUser.profilepic) // Replace with your image
+                          backgroundImage: NetworkImage(
+                            currentUser.profilepic,
+                          ) // Replace with your image
                           ),
                     ),
                   ],
@@ -68,7 +85,14 @@ class _ProfileState extends State<Profile> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          // Add your onPressed logic here
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return EditProfileModal(
+                                currentUser: currentUser,
+                              );
+                            },
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black, // Background color
@@ -158,7 +182,8 @@ class TabBarExample extends StatelessWidget {
           children: [
             Container(
               constraints: BoxConstraints.expand(
-                  height: 30), // Adjust the height as needed
+                height: 30,
+              ), // Adjust the height as needed
               child: TabBar(
                 tabs: [
                   Tab(text: 'Posts'),
@@ -326,5 +351,175 @@ class PostWidget extends StatelessWidget {
     } else {
       return 'Just now';
     }
+  }
+}
+
+class EditProfileModal extends StatefulWidget {
+  final User currentUser;
+  EditProfileModal({required this.currentUser});
+
+  @override
+  State<EditProfileModal> createState() => _EditProfileModalState();
+}
+
+class _EditProfileModalState extends State<EditProfileModal> {
+  TextEditingController _aboutController = TextEditingController();
+  String _currentProfilePic = 'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=';
+  var _isUploadingFile = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _aboutController = TextEditingController(text: widget.currentUser.about);
+    setState(() {
+      _currentProfilePic = widget.currentUser.profilepic;
+    });
+  }
+
+  Future<String>_handlerProfilePicUpload(File file)async{
+    var rng = Random();
+    Reference storageReference = FirebaseStorage.instance.ref().child('profile/${widget.currentUser.id}-${rng.nextInt(999999)}');
+    UploadTask uploadTask = storageReference.putFile(file);
+    TaskSnapshot taskSnapshot = await uploadTask;
+    return await taskSnapshot.ref.getDownloadURL();
+  }
+
+  Future<void> _handlerEditProfile()async{
+    FirebaseFirestore.instance.collection('users').doc(widget.currentUser.id).update({'about':_aboutController.text,'profilepic':_currentProfilePic});
+
+  }
+
+  Future<File?> _getImageFromSource(ImagePicker picker, ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      return File(pickedFile.path);
+    }
+    return null;
+  }
+
+  Future<String> _showImagePickerDialog(BuildContext context) async {
+    final picker = ImagePicker();
+    final pickedImage = await showDialog<File>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Select Image Source'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Gallery'),
+                onTap: () async {
+                  Navigator.of(context).pop(await _getImageFromSource(picker, ImageSource.gallery));
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Camera'),
+                onTap: () async {
+                  Navigator.of(context).pop(await _getImageFromSource(picker, ImageSource.camera));
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    setState(() {
+      _isUploadingFile=true;
+    });
+    return _handlerProfilePicUpload(pickedImage!);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      elevation: 0.0,
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+              Text(
+                'Edit Profile',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              SizedBox(height: 20.0),
+              _isUploadingFile?Center(child: CircularProgressIndicator(),):GestureDetector(
+                onTap: ()async{
+                  final imageUrl = await _showImagePickerDialog(context);
+                  setState(() {
+                    _currentProfilePic=imageUrl;
+                    _isUploadingFile=false;
+                  });             
+                },
+                child: CircleAvatar(
+                  radius: MediaQuery.of(context).size.width * 0.3,
+                  backgroundImage:
+                      NetworkImage(_currentProfilePic), // Placeholder image
+                ),
+              ),
+              SizedBox(height: 20.0),
+              TextField(
+                controller: _aboutController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  hintText: 'About Me',
+                  contentPadding :EdgeInsets.symmetric(horizontal: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0), // Curved corners
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: () async{
+                  await _handlerEditProfile();
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black, // Background color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30), // Capsule shape
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 2, horizontal: 10)),
+                child: Text(
+                  'Edit Profile',
+                  style: TextStyle(
+                    color: Colors.white, // Text color
+                    fontSize: 12,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

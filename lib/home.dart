@@ -1,4 +1,5 @@
 import 'package:alumnet/models/tab_item.dart';
+import 'package:alumnet/models/user.dart';
 import 'package:alumnet/navigation/custom_tab_bar.dart';
 import 'package:alumnet/profile/profile_screen.dart';
 import 'package:alumnet/screens/community_screen.dart';
@@ -16,6 +17,9 @@ class AlumnetHome extends StatefulWidget {
 }
 
 class _AlumnetHomeState extends State<AlumnetHome> {
+
+  User currentUser = User(id: '8BICx4WqZatmhFNsgmDZ', batch: '2024',username: "20bds016",name:"Chirag",about: "Hello User",profilepic: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',branch: 'DSAI');
+
   final List _pages = [
     HomePage(),
     SearchPage(),
@@ -66,7 +70,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                     child: CircleAvatar(
                       radius: 25,
                       backgroundImage: NetworkImage(
-                          'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw='),
+                          currentUser.profilepic),
                     ),
                     onTap: (){
                       onTabPress(5);

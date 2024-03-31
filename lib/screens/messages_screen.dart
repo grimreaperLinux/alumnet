@@ -88,14 +88,15 @@ class _MessagesPageState extends State<MessagesPage> {
               controller: _controller,
               focusNode: _focusNode,
               decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  hintText: 'Chat',
-                  prefixIcon: Icon(Icons.search), // Using Icons.chat constant
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0), // Curved corners
-                  ),
-                  contentPadding: EdgeInsets.all(0)),
+                filled: true,
+                fillColor: Colors.grey[200],
+                hintText: 'Chat',
+                prefixIcon: Icon(Icons.search), // Using Icons.chat constant
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30.0), // Curved corners
+                ),
+                contentPadding: EdgeInsets.all(0),
+              ),
             ),
           ),
           !isFocus
@@ -117,9 +118,12 @@ class _MessagesPageState extends State<MessagesPage> {
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
                           final listItem = snapshot.data!.docs[index];
-                          List<dynamic> users = snapshot.data!.docs[index]['users'];
+                          List<dynamic> users =
+                              snapshot.data!.docs[index]['users'];
 
-                          users.removeWhere((element) => element==currentUser.id,);
+                          users.removeWhere(
+                            (element) => element == currentUser.id,
+                          );
                           final otherUserId = users[0];
                           print(otherUserId);
 
@@ -222,20 +226,20 @@ class FrequentChatItem extends StatelessWidget {
           await FirebaseFirestore.instance.collection('chat').add({
         "users": [currentUser.id, chattingWithUser.id],
         "${chattingWithUser.id}": {
-          "name":chattingWithUser.name,
-          "username":chattingWithUser.username,
-          "profilepic":chattingWithUser.profilepic,
-          "batch":chattingWithUser.batch,
-          "branch":chattingWithUser.branch,
-          "about":chattingWithUser.about
+          "name": chattingWithUser.name,
+          "username": chattingWithUser.username,
+          "profilepic": chattingWithUser.profilepic,
+          "batch": chattingWithUser.batch,
+          "branch": chattingWithUser.branch,
+          "about": chattingWithUser.about
         },
-        "${currentUser.id}":{
-          "name":currentUser.name,
-          "username":currentUser.username,
-          "profilepic":currentUser.profilepic,
-          "batch":currentUser.batch,
-          "branch":currentUser.branch,
-          "about":currentUser.about
+        "${currentUser.id}": {
+          "name": currentUser.name,
+          "username": currentUser.username,
+          "profilepic": currentUser.profilepic,
+          "batch": currentUser.batch,
+          "branch": currentUser.branch,
+          "about": currentUser.about
         },
         "created_at": DateTime.now(),
         "lastMessage": "",
