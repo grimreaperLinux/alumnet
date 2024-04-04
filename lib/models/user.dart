@@ -2,15 +2,24 @@ import 'package:alumnet/models/god.dart';
 
 class User {
   final String id;
-  final String profilepic;
+  final String? profilepic;
   final String name;
-  final String username;
+  final String? username;
   List<String> likedPosts = [];
-  final String batch;
-  final String about;
-  final String branch;
+  final String? batch;
+  final String? about;
+  final String email;
+  final String? branch;
 
-  User({required this.name, required this.profilepic, required this.username, required this.about, required this.batch, required this.branch, required this.id});
+  User(
+      {required this.email,
+      required this.name,
+      this.profilepic,
+      this.username,
+      this.about,
+      this.batch,
+      this.branch,
+      required this.id});
 
   factory User.fromdummyData() {
     User user = User(
@@ -21,15 +30,20 @@ class User {
         id: 'this_is_a_special_id',
         batch: '2024',
         about: 'Genius, Billionaire, Playboy, Philanthropist',
-      branch: "DSAI");
+      branch: "DSAI",
+      email: "gg@op.com",
+    );
 
     user.likedPosts = [];
 
     return user;
   }
 
-  getGod() {
-    return God().getGod();
+  Future<User?> getGod() async {
+    User? apnaUser;
+    Map<String, dynamic>? user = await God().getGod();
+    apnaUser = User(
+        name: user!['fullName'], id: user['instituteId'], email: user['email']);
+    return apnaUser;
   }
-
 }
