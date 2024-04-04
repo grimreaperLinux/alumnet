@@ -2,19 +2,19 @@ import 'package:alumnet/models/god.dart';
 
 class User {
   final String id;
-  final String? profilepic;
+  final String profilepic;
   final String name;
   final String? username;
   List<String> likedPosts = [];
   final String? batch;
   final String? about;
-  final String email;
+  final String? email;
   final String? branch;
 
   User(
-      {required this.email,
+      {this.email,
       required this.name,
-      this.profilepic,
+      required this.profilepic,
       this.username,
       this.about,
       this.batch,
@@ -43,7 +43,10 @@ class User {
     User? apnaUser;
     Map<String, dynamic>? user = await God().getGod();
     apnaUser = User(
-        name: user!['fullName'], id: user['instituteId'], email: user['email']);
+        name: user!['fullName'],
+        id: user['instituteId'],
+        email: user['email'],
+        profilepic: "amazinglink");
     return apnaUser;
   }
 }
