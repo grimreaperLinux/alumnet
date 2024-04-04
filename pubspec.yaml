@@ -39,7 +39,7 @@ dependencies:
   carousel_slider: ^4.2.1
   url_launcher: ^6.2.5
   image_picker: ^1.0.7
-  file_picker: ^6.2.0
+  file_picker: ^8.0.0+1
   top_snackbar_flutter: ^3.1.0
   firebase_core: ^2.27.1
   cloud_firestore: ^4.15.10
@@ -51,6 +51,14 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^24.2.8
   path_provider: ^2.1.2
   dio: ^5.4.1
+  firebase_auth: ^4.17.9
+  # firebase_ui_auth: ^1.13.1
+  firebase_dynamic_links: ^5.4.18
+  google_fonts: ^6.2.1
+  flutter_native_splash: ^2.4.0
+  get: ^4.6.5
+  liquid_swipe: ^3.0.0
+  smooth_page_indicator: ^1.0.0+2
 
 dev_dependencies:
   flutter_test:
@@ -62,6 +70,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^3.0.0
+
+# flutter_native_splash:
+#   color: "#f7f6f1"
+#   image: assets/logo.jpg
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,7 +90,12 @@ flutter:
   assets:
     - assets/rive_app/icons.riv
     - assets/logo.jpg
-    - assets/Images/
+    - assets/images/1.jpeg
+    - assets/images/2.jpeg
+    - assets/images/3.jpeg
+    - assets/images/4.jpeg
+    - assets/images/5.jpeg
+    # - assets/Images/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
