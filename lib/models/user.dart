@@ -1,3 +1,5 @@
+import 'package:alumnet/models/god.dart';
+
 class User {
   final String id;
   final String profilepic;
@@ -25,4 +27,9 @@ class User {
 
     return user;
   }
+
+  getGod() {
+    return God().getGod();
+  }
+
 }

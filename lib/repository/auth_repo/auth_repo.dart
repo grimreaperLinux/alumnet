@@ -10,13 +10,14 @@ class AuthRepo extends GetxController {
 
   final _auth = FirebaseAuth.instance;
   late final Rx<User?> firebaseUser;
-
   @override
   void onReady() {
     firebaseUser = Rx<User?>(_auth.currentUser);
     firebaseUser.bindStream(_auth.userChanges());
     ever(firebaseUser, _setInitialScreen);
   }
+
+  User? get currentUser => firebaseUser.value;
 
   _setInitialScreen(User? user) {
     user == null
