@@ -1,7 +1,7 @@
 import 'package:alumnet/models/tab_item.dart';
 import 'package:alumnet/navigation/custom_tab_bar.dart';
 import 'package:alumnet/profile/profile_screen.dart';
-import 'package:alumnet/screens/community_screen.dart';
+import 'package:alumnet/screens/community/community_screen.dart';
 import 'package:alumnet/screens/home/home_screen.dart';
 import 'package:alumnet/screens/messages_screen.dart';
 import 'package:alumnet/screens/notifications_screen.dart';
@@ -42,7 +42,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
         _selectedTab = index;
       });
       changeScreen(index);
-      if(index<=4){
+      if (index <= 4) {
         _icons[index].status!.change(true);
         Future.delayed(const Duration(seconds: 1), () {
           _icons[index].status!.change(false);
@@ -68,7 +68,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                       backgroundImage: NetworkImage(
                           'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw='),
                     ),
-                    onTap: (){
+                    onTap: () {
                       onTabPress(5);
                     },
                   ),
