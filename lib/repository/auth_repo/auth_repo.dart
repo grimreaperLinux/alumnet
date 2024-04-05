@@ -13,22 +13,20 @@ class AuthRepo extends GetxController {
 
   @override
   void onReady() {
+    super.onReady();
     firebaseUser = Rx<User?>(_auth.currentUser);
     firebaseUser.bindStream(_auth.userChanges());
     ever(firebaseUser, _setInitialScreen);
   }
 
-  _setInitialScreen(User? user) {
-    user == null
-        ? Get.offAll(() => const WelcomeScreen())
-        : Get.offAll(() => AlumnetHome());
+  _setInitialScreen(User? user) async {
+    Map<String, dynamic>? userDoc = await getUserByEmail(user == null ? '' : user.email as String);
+    user == null ? Get.offAll(() => const WelcomeScreen()) : Get.offAll(() => AlumnetHome(userDoc: userDoc as Map<String, dynamic>));
   }
 
-  Future<void> createUserWithEmailAndPassword(
-      String email, String password) async {
+  Future<void> createUserWithEmailAndPassword(String email, String password) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
+      await _auth.createUserWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       final ex = SignUpFailure.code(e.code);
       Get.snackbar('Error', ex.message);
@@ -40,13 +38,11 @@ class AuthRepo extends GetxController {
     }
   }
 
-  Future<void> loginUserWithEmailAndPassword(
-      String email, String password) async {
+  Future<void> loginUserWithEmailAndPassword(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(email: email, password: password);
-      firebaseUser.value != null
-          ? Get.offAll(() => AlumnetHome())
-          : Get.to(() => WelcomeScreen());
+      Map<String, dynamic>? userDoc = await getUserByEmail(email);
+      firebaseUser.value != null ? Get.offAll(() => AlumnetHome(userDoc: userDoc as Map<String, dynamic>)) : Get.to(() => WelcomeScreen());
     } catch (_) {
       Get.snackbar('Error', "Invalid id or password");
       throw _;
@@ -74,13 +70,13 @@ class AuthRepo extends GetxController {
 
   Future<Map<String, dynamic>?> getUserByEmail(String email) async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('email', isEqualTo: email)
-          .get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('Users').where('email', isEqualTo: email).get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
+        var doc = querySnapshot.docs.first;
+        var userData = doc.data() as Map<String, dynamic>;
+        // Include the document ID in the userData map
+        userData['id'] = doc.id;
         return userData;
       } else {
         print('User not found with email: $email');
@@ -94,10 +90,7 @@ class AuthRepo extends GetxController {
 
   Future<Map<String, dynamic>?> getUserById(String id) async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('instituteId', isEqualTo: id)
-          .get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('Users').where('instituteId', isEqualTo: id).get();
 
       if (querySnapshot.docs.isNotEmpty) {
         var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
@@ -130,15 +123,10 @@ class AuthRepo extends GetxController {
     });
   }
 
-
-  Future<Map<String, dynamic>?> getUserByIdEmail(
-      String id, String email) async {
+  Future<Map<String, dynamic>?> getUserByIdEmail(String id, String email) async {
     try {
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-          .collection('Users')
-          .where('instituteId', isEqualTo: id)
-          .where('email', isEqualTo: email)
-          .get();
+      QuerySnapshot querySnapshot =
+          await FirebaseFirestore.instance.collection('Users').where('instituteId', isEqualTo: id).where('email', isEqualTo: email).get();
 
       if (querySnapshot.docs.isNotEmpty) {
         var userData = querySnapshot.docs.first.data() as Map<String, dynamic>;
@@ -152,8 +140,4 @@ class AuthRepo extends GetxController {
       return null;
     }
   }
-
 }
-
-
-

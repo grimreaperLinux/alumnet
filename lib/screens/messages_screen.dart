@@ -18,19 +18,22 @@ class _MessagesPageState extends State<MessagesPage> {
   var searchQueryText = "";
 
   User currentUser = User(
-      id: '8BICx4WqZatmhFNsgmDZ',
-      batch: '2024',
-      username: "chirag",
-      name: "chirag",
-      about: "Somrthing",
-      profilepic:
-          'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',
-      branch: 'DSAI');
+    id: '8BICx4WqZatmhFNsgmDZ',
+    batch: '2024',
+    username: "20bds016",
+    name: "Chirag",
+    about: "Hello User",
+    profilepic:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+    branch: 'DSAI',
+    email: "chirag@gmail.com",
+  );
 
   final List<Map<String, dynamic>> users = [
     {
       "user": User(
           id: "45",
+          email: "chirag@gmail.com",
           about: 'Something',
           batch: '2024',
           name: "aniket",
@@ -102,10 +105,7 @@ class _MessagesPageState extends State<MessagesPage> {
           !isFocus
               ? Expanded(
                   child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('chat')
-                        .where('users', arrayContains: currentUser.id)
-                        .snapshots(),
+                    stream: FirebaseFirestore.instance.collection('chat').where('users', arrayContains: currentUser.id).snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();
@@ -118,8 +118,7 @@ class _MessagesPageState extends State<MessagesPage> {
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
                           final listItem = snapshot.data!.docs[index];
-                          List<dynamic> users =
-                              snapshot.data!.docs[index]['users'];
+                          List<dynamic> users = snapshot.data!.docs[index]['users'];
 
                           users.removeWhere(
                             (element) => element == currentUser.id,
@@ -130,16 +129,16 @@ class _MessagesPageState extends State<MessagesPage> {
                           return FrequentChatItem(
                             chatId: listItem.id,
                             chattingWithUser: User(
-                              id: listItem.id,
-                              username: listItem[otherUserId]['username'],
-                              batch: listItem[otherUserId]['batch'],
-                              branch: listItem[otherUserId]['branch'],
-                              about: listItem[otherUserId]['about'],
-                              name: listItem[otherUserId]['name'],
-                              profilepic: listItem[otherUserId]['profilepic'],
-                            ),
-                            lastMessageTime:
-                                listItem['lastMessageTime'].toDate(),
+                                id: listItem.id,
+                                username: listItem[otherUserId]['username'],
+                                batch: listItem[otherUserId]['batch'],
+                                branch: listItem[otherUserId]['branch'],
+                                about: listItem[otherUserId]['about'],
+                                name: listItem[otherUserId]['name'],
+                                profilepic: listItem[otherUserId]['profilepic'],
+                                email: '' // to be filled by chirag
+                                ),
+                            lastMessageTime: listItem['lastMessageTime'].toDate(),
                             lastChatMessage: listItem['lastMessage'],
                             currentUser: currentUser,
                           );
@@ -153,18 +152,14 @@ class _MessagesPageState extends State<MessagesPage> {
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('users')
-                            .where('name',
-                                isGreaterThanOrEqualTo: searchQueryText)
+                            .where('name', isGreaterThanOrEqualTo: searchQueryText)
                             .where('name', isLessThan: searchQueryText + 'z')
                             .snapshots(),
-                        builder:
-                            (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
+                        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
                             return CircularProgressIndicator();
                           }
-                          if (!snapshot.hasData ||
-                              snapshot.data!.docs.isEmpty) {
+                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                             return Text('No matching documents found.');
                           }
 
@@ -175,14 +170,15 @@ class _MessagesPageState extends State<MessagesPage> {
                               return FrequentChatItem(
                                 chatId: '',
                                 chattingWithUser: User(
-                                  id: listItem.id,
-                                  username: listItem['username'],
-                                  batch: listItem['batch'],
-                                  branch: listItem['branch'],
-                                  about: listItem['about'],
-                                  name: listItem['name'],
-                                  profilepic: listItem['profilepic'],
-                                ),
+                                    id: listItem.id,
+                                    username: listItem['username'],
+                                    batch: listItem['batch'],
+                                    branch: listItem['branch'],
+                                    about: listItem['about'],
+                                    name: listItem['name'],
+                                    profilepic: listItem['profilepic'],
+                                    email: '' // to be filled by chirag
+                                    ),
                                 lastMessageTime: DateTime.now(),
                                 lastChatMessage: '',
                                 currentUser: currentUser,
@@ -216,14 +212,12 @@ class FrequentChatItem extends StatelessWidget {
   }) : super(key: key);
 
   Future<String> _createOrRetrieveChat() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
-        .collection('chat')
-        .where('users', isEqualTo: [currentUser.id, chattingWithUser.id]).get();
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('chat').where('users', isEqualTo: [currentUser.id, chattingWithUser.id]).get();
     List<QueryDocumentSnapshot> documents = querySnapshot.docs;
 
     if (documents.isEmpty) {
-      final createdObject =
-          await FirebaseFirestore.instance.collection('chat').add({
+      final createdObject = await FirebaseFirestore.instance.collection('chat').add({
         "users": [currentUser.id, chattingWithUser.id],
         "${chattingWithUser.id}": {
           "name": chattingWithUser.name,
@@ -260,11 +254,8 @@ class FrequentChatItem extends StatelessWidget {
         if (chatIdToPass == '') {
           chatIdToPass = await _createOrRetrieveChat();
         }
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ChatScreen(
-                currentUser: currentUser,
-                chattingWithUser: chattingWithUser,
-                chatId: chatIdToPass)));
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => ChatScreen(currentUser: currentUser, chattingWithUser: chattingWithUser, chatId: chatIdToPass)));
       },
       child: Container(
         padding: EdgeInsets.all(16.0),

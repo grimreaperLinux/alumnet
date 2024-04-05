@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:alumnet/icons/custom_icons.dart';
 import 'package:alumnet/models/feed_post.dart';
 import 'package:alumnet/utils.dart';
@@ -12,6 +10,7 @@ import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 import 'package:alumnet/models/user.dart';
 import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 
 class SocialCard extends StatelessWidget {
@@ -19,7 +18,7 @@ class SocialCard extends StatelessWidget {
   const SocialCard({required this.post, super.key});
   @override
   Widget build(BuildContext context) {
-    User user = User.fromdummyData();
+    User user = Provider.of<CurrentUser>(context).currentUser;
     return Padding(
       padding: const EdgeInsets.all(6.0),
       child: Card(

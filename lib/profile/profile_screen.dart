@@ -18,14 +18,16 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   User currentUser = User(
-      id: '8BICx4WqZatmhFNsgmDZ',
-      batch: '2024',
-      username: "20bds016",
-      name: "Chirag",
-      about: "Hello User",
-      profilepic:
-          'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-      branch: 'DSAI');
+    id: '8BICx4WqZatmhFNsgmDZ',
+    batch: '2024',
+    username: "20bds016",
+    name: "Chirag",
+    about: "Hello User",
+    profilepic:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+    branch: 'DSAI',
+    email: "chirag@gmail.com",
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +80,7 @@ class _ProfileState extends State<Profile> {
                     children: [
                       Text(
                         "${currentUser.name}",
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w500),
+                        style: TextStyle(color: Colors.black, fontSize: 30, fontWeight: FontWeight.w500),
                       ),
                       ElevatedButton(
                         onPressed: () {
@@ -97,11 +96,9 @@ class _ProfileState extends State<Profile> {
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black, // Background color
                             shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(30), // Capsule shape
+                              borderRadius: BorderRadius.circular(30), // Capsule shape
                             ),
-                            padding: EdgeInsets.symmetric(
-                                vertical: 2, horizontal: 10)),
+                            padding: EdgeInsets.symmetric(vertical: 2, horizontal: 10)),
                         child: Text(
                           'Edit Profile',
                           style: TextStyle(
@@ -124,8 +121,7 @@ class _ProfileState extends State<Profile> {
                     child: Text(
                       '${currentUser.about}',
                       style: TextStyle(color: Colors.black, fontSize: 15),
-                      overflow: TextOverflow
-                          .ellipsis, // Display ellipsis when overflowing
+                      overflow: TextOverflow.ellipsis, // Display ellipsis when overflowing
                     ),
                   ),
                   Padding(
@@ -165,8 +161,7 @@ class TabBarExample extends StatelessWidget {
       'name': 'Chirag Mittal',
       'username': 'chiragmittal',
       'postedAt': DateTime.now().subtract(Duration(days: 2, hours: 1 * 2)),
-      'postContent':
-          'This is post number 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      'postContent': 'This is post number 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit',
       'likes': 10 + 1 * 2,
       'comments': 5 + 1,
       'views': 100 + 1 * 10,
@@ -364,7 +359,8 @@ class EditProfileModal extends StatefulWidget {
 
 class _EditProfileModalState extends State<EditProfileModal> {
   TextEditingController _aboutController = TextEditingController();
-  String _currentProfilePic = 'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=';
+  String _currentProfilePic =
+      'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=';
   var _isUploadingFile = false;
   @override
   void initState() {
@@ -376,7 +372,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
     });
   }
 
-  Future<String>_handlerProfilePicUpload(File file)async{
+  Future<String> _handlerProfilePicUpload(File file) async {
     var rng = Random();
     Reference storageReference = FirebaseStorage.instance.ref().child('profile/${widget.currentUser.id}-${rng.nextInt(999999)}');
     UploadTask uploadTask = storageReference.putFile(file);
@@ -384,9 +380,11 @@ class _EditProfileModalState extends State<EditProfileModal> {
     return await taskSnapshot.ref.getDownloadURL();
   }
 
-  Future<void> _handlerEditProfile()async{
-    FirebaseFirestore.instance.collection('users').doc(widget.currentUser.id).update({'about':_aboutController.text,'profilepic':_currentProfilePic});
-
+  Future<void> _handlerEditProfile() async {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.currentUser.id)
+        .update({'about': _aboutController.text, 'profilepic': _currentProfilePic});
   }
 
   Future<File?> _getImageFromSource(ImagePicker picker, ImageSource source) async {
@@ -427,7 +425,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
       },
     );
     setState(() {
-      _isUploadingFile=true;
+      _isUploadingFile = true;
     });
     return _handlerProfilePicUpload(pickedImage!);
   }
@@ -469,20 +467,23 @@ class _EditProfileModalState extends State<EditProfileModal> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               SizedBox(height: 20.0),
-              _isUploadingFile?Center(child: CircularProgressIndicator(),):GestureDetector(
-                onTap: ()async{
-                  final imageUrl = await _showImagePickerDialog(context);
-                  setState(() {
-                    _currentProfilePic=imageUrl;
-                    _isUploadingFile=false;
-                  });             
-                },
-                child: CircleAvatar(
-                  radius: MediaQuery.of(context).size.width * 0.3,
-                  backgroundImage:
-                      NetworkImage(_currentProfilePic), // Placeholder image
-                ),
-              ),
+              _isUploadingFile
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : GestureDetector(
+                      onTap: () async {
+                        final imageUrl = await _showImagePickerDialog(context);
+                        setState(() {
+                          _currentProfilePic = imageUrl;
+                          _isUploadingFile = false;
+                        });
+                      },
+                      child: CircleAvatar(
+                        radius: MediaQuery.of(context).size.width * 0.3,
+                        backgroundImage: NetworkImage(_currentProfilePic), // Placeholder image
+                      ),
+                    ),
               SizedBox(height: 20.0),
               TextField(
                 controller: _aboutController,
@@ -490,7 +491,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
                   filled: true,
                   fillColor: Colors.grey[200],
                   hintText: 'About Me',
-                  contentPadding :EdgeInsets.symmetric(horizontal: 10),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0), // Curved corners
                   ),
@@ -498,7 +499,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
               ),
               SizedBox(height: 20.0),
               ElevatedButton(
-                onPressed: () async{
+                onPressed: () async {
                   await _handlerEditProfile();
                   Navigator.of(context).pop();
                 },

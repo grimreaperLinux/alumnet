@@ -57,32 +57,35 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: const Text(
-                  "What's New",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: const Text(
+                    "What's New",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+                  ),
                 ),
-              ),
-              IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, PostCreationScreen.routename).then(
-                    (value) => {
-                      showTopSnackBar(
-                        Overlay.of(context),
-                        const CustomSnackBar.success(
-                          message: "Your Post has been created!",
+                IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, PostCreationScreen.routename).then(
+                      (value) => {
+                        showTopSnackBar(
+                          Overlay.of(context),
+                          const CustomSnackBar.success(
+                            message: "Your Post has been created!",
+                          ),
                         ),
-                      ),
-                    },
-                  );
-                },
-                icon: const Icon(Icons.add_box_rounded),
-              )
-            ],
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.add_box_rounded),
+                )
+              ],
+            ),
           ),
           Expanded(
             child: SingleChildScrollView(

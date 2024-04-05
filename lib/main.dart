@@ -3,6 +3,7 @@ import 'package:alumnet/features/auth/screens/on_boarding/onboarding_page.dart';
 import 'package:alumnet/features/auth/screens/splash_screen/splash_screen.dart';
 import 'package:alumnet/features/auth/screens/welcome/welcome.dart';
 import 'package:alumnet/home.dart';
+import 'package:alumnet/models/user.dart';
 import 'package:alumnet/repository/auth_repo/auth_repo.dart';
 import 'package:alumnet/models/feed_post.dart';
 import 'package:alumnet/screens/home/create_post_screen.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => PostList()),
+        ChangeNotifierProvider(create: (context) => CurrentUser()),
       ],
       child: SafeArea(
         child: GetMaterialApp(
@@ -38,9 +40,7 @@ class MyApp extends StatelessWidget {
           darkTheme: TAppTheme.darkTheme,
           themeMode: ThemeMode.system,
           home: WelcomeScreen(),
-          routes: {
-            PostCreationScreen.routename: (context) => PostCreationScreen()
-          },
+          routes: {PostCreationScreen.routename: (context) => PostCreationScreen()},
         ),
       ),
     );

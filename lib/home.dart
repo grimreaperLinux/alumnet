@@ -9,26 +9,36 @@ import 'package:alumnet/screens/messages_screen.dart';
 import 'package:alumnet/screens/notifications_screen.dart';
 import 'package:alumnet/screens/search_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AlumnetHome extends StatefulWidget {
-  const AlumnetHome({super.key});
+  final Map<String, dynamic> userDoc;
+
+  const AlumnetHome({super.key, required this.userDoc});
 
   @override
   State<AlumnetHome> createState() => _AlumnetHomeState();
 }
 
 class _AlumnetHomeState extends State<AlumnetHome> {
+  User currentUser = User(
+    id: '8BICx4WqZatmhFNsgmDZ',
+    batch: '2024',
+    username: "20bds016",
+    name: "Chirag",
+    about: "Hello User",
+    profilepic:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+    branch: 'DSAI',
+    email: "chirag@gmail.com",
+  );
 
-  User currentUser = User(id: '8BICx4WqZatmhFNsgmDZ', batch: '2024',username: "20bds016",name:"Chirag",about: "Hello User",profilepic: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',branch: 'DSAI');
-
-  final List _pages = [
-    HomePage(),
-    SearchPage(),
-    CommunityPage(),
-    NotificationsPage(),
-    MessagesPage(),
-    Profile()
-  ];
+  final List _pages = [HomePage(), SearchPage(), CommunityPage(), NotificationsPage(), MessagesPage(), Profile()];
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<CurrentUser>(context, listen: false).setCurrentUser(widget.userDoc);
+  }
 
   int _index = 0;
 
@@ -47,7 +57,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
         _selectedTab = index;
       });
       changeScreen(index);
-      if(index<=4){
+      if (index <= 4) {
         _icons[index].status!.change(true);
         Future.delayed(const Duration(seconds: 1), () {
           _icons[index].status!.change(false);
@@ -61,34 +71,26 @@ class _AlumnetHomeState extends State<AlumnetHome> {
     return Scaffold(
       body: Column(
         children: [
-            
           Padding(
             padding: const EdgeInsets.all(10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ElevatedButton(
-                onPressed: () {
-                  // Handle logout action
-                  AuthRepo.instance.logout();
-                },
-                    child: Text('Logout')),
                 Container(
                   child: GestureDetector(
                     child: CircleAvatar(
                       radius: 25,
-                      backgroundImage: NetworkImage(
-                          currentUser.profilepic),
+                      backgroundImage: NetworkImage(currentUser.profilepic),
                     ),
-                    onTap: (){
+                    onTap: () {
                       onTabPress(5);
                     },
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.settings),
+                  icon: const Icon(Icons.logout_outlined),
                   onPressed: () {
-                    // Handle settings icon action
+                    AuthRepo.instance.logout();
                   },
                 ),
               ],

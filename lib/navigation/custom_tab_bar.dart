@@ -16,8 +16,7 @@ class CustomTabBar extends StatefulWidget {
 
 class _CustomTabBarState extends State<CustomTabBar> {
   void _onRiveIconInit(Artboard artboard, int index) {
-    final controller = StateMachineController.fromArtboard(
-        artboard, _icons[index].stateMachine);
+    final controller = StateMachineController.fromArtboard(artboard, _icons[index].stateMachine);
     artboard.addController(controller!);
 
     _icons[index].status = controller.findInput<bool>("active") as SMIBool;
@@ -30,13 +29,11 @@ class _CustomTabBarState extends State<CustomTabBar> {
     return SafeArea(
       child: Container(
         margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-        padding: const EdgeInsets.fromLTRB(1, 1, 1, 10),
+        padding: const EdgeInsets.fromLTRB(1, 10, 1, 10),
         decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [
-              Colors.white.withOpacity(0.5),
-              Colors.white.withOpacity(0)
-            ]),
-            borderRadius: BorderRadius.circular(24)),
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+        ),
         child: Container(
           decoration: BoxDecoration(
             color: AlumnetTheme.background2.withOpacity(0.8),
