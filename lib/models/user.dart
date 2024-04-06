@@ -48,6 +48,9 @@ class CurrentUser extends ChangeNotifier {
       id: userData['id'],
       email: userData['email'],
       instituteId: userData['instituteId'],
+      profilepic: userData.containsKey('profilepic')?userData['profilepic']:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
+      about: userData.containsKey('about')?userData['about']:'',
+      batch: userData.containsKey('batch')?userData['batch']:''
     ));
 
     print(currentUser.instituteId);

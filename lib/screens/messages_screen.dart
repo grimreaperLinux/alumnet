@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
 
 class MessagesPage extends StatefulWidget {
   @override
@@ -16,18 +17,6 @@ class _MessagesPageState extends State<MessagesPage> {
   FocusNode _focusNode = FocusNode();
   var isFocus = false;
   var searchQueryText = "";
-
-  User currentUser = User(
-    id: '8BICx4WqZatmhFNsgmDZ',
-    batch: '2024',
-    username: "20bds016",
-    name: "Chirag",
-    about: "Hello User",
-    profilepic:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-    branch: 'DSAI',
-    email: "chirag@gmail.com",
-  );
 
   final List<Map<String, dynamic>> users = [
     {
@@ -82,6 +71,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<CurrentUser>(context).currentUser;
     return Scaffold(
       body: Column(
         children: [
