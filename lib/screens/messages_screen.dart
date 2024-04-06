@@ -95,7 +95,7 @@ class _MessagesPageState extends State<MessagesPage> {
           !isFocus
               ? Expanded(
                   child: StreamBuilder(
-                    stream: FirebaseFirestore.instance.collection('chat').where('users', arrayContains: currentUser.id).snapshots(),
+                    stream: FirebaseFirestore.instance.collection('chat').where('Users', arrayContains: currentUser.id).snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();
@@ -141,7 +141,7 @@ class _MessagesPageState extends State<MessagesPage> {
                   ? Expanded(
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
-                            .collection('users')
+                            .collection('Users')
                             .where('name', isGreaterThanOrEqualTo: searchQueryText)
                             .where('name', isLessThan: searchQueryText + 'z')
                             .snapshots(),

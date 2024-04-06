@@ -936,7 +936,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
 
   Future<void> _handlerEditProfile() async {
     FirebaseFirestore.instance
-        .collection('users')
+        .collection('Users')
         .doc(widget.currentUser.id)
         .update(
             {'about': _aboutController.text, 'profilepic': _currentProfilePic});
