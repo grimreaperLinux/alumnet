@@ -4,40 +4,61 @@ import 'package:alumnet/screens/community/discussion_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class CommunityPage extends StatelessWidget {
+class CommunityPage extends StatefulWidget {
+  @override
+  State<CommunityPage> createState() => _CommunityPageState();
+}
+
+class _CommunityPageState extends State<CommunityPage> {
   final TextEditingController _searchController = TextEditingController();
-  final List<Community> communityData = [
-    Community(name: "Open Source", image: "", activeMembers: 220),
-    Community(name: "Web3", image: "", activeMembers: 120),
-  ];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Community> communityData = [];
+
+  @override
+  initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  void _fetchData() async {
+    QuerySnapshot<Map<String, dynamic>> querySnapshot =
+        await _firestore.collection('discussions').get();
+
+    setState(() {
+      communityData = querySnapshot.docs
+          .map((doc) => Community.fromMap(doc.data()))
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 30),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 30),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                addUsersToFirebase();
-              },
-              child: Text('Add users to Firebase'),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: GridView.builder(
+              TextButton(
+                onPressed: () {
+                  addCommunitiesToFirebase();
+                },
+                child: Text('Add Communities to Firebase'),
+              ),
+              SizedBox(height: 10),
+              GridView.builder(
+                shrinkWrap: true,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   crossAxisSpacing: 10,
@@ -80,14 +101,14 @@ class CommunityPage extends StatelessWidget {
                   );
                 },
               ),
-            ),
-            Text(
-              "Communities",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
+              SizedBox(height: 20),
+              Text(
+                "Discover Communities",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
                 itemCount: communityData.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
@@ -104,8 +125,8 @@ class CommunityPage extends StatelessWidget {
                   );
                 },
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -148,41 +169,48 @@ class CommunityBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(10),
+      padding: EdgeInsets.all(5),
       child: Container(
+        padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          border: Border.all(),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(10)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.cloud),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  communityData.name,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      communityData.name,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text('${communityData.activeMembers} Active Members',
+                        style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  child: Text(
+                    "Join",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(0, 30),
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25)),
                   ),
                 ),
-                Text(
-                  'Type: Verified',
-                  style: TextStyle(color: Colors.grey),
-                ),
               ],
             ),
-            Column(
-              children: [
-                Text(
-                  communityData.activeMembers.toString(),
-                  style: TextStyle(fontSize: 20),
-                ),
-                Text('Active Members', style: TextStyle(fontSize: 12)),
-              ],
-            ),
+            Text(communityData.bio),
           ],
         ),
       ),
@@ -239,4 +267,47 @@ void addUsersToFirebase() async {
   } catch (error) {
     print("Error:$error");
   }
+}
+
+void addCommunitiesToFirebase() async {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  try {
+    List<Map<String, dynamic>> discussionData = [
+      {
+        "name": "Web 3",
+        "bio":
+            "The go-to place for web3 enthusiasts to indulge in juicy gossip.",
+        "image": "",
+        "activeMembers": 100,
+      },
+      {
+        "name": "Open Source",
+        "bio":
+            "The go-to place for open source enthusiasts to indulge in juicy gossip.",
+        "image": "",
+        "activeMembers": 100,
+      },
+      {
+        "name": "Apple Ecosystem",
+        "bio": "The go-to place for apple fanboys to indulge in juicy gossip.",
+        "image": "",
+        "activeMembers": 120,
+      }
+    ];
+
+    for (var discussion in discussionData) {
+      String collectionPath = 'discussions/';
+      String documentID = discussion['name'];
+      await _firestore
+          .collection(collectionPath)
+          .doc(documentID)
+          .set(discussion);
+    }
+  } catch (e) {
+    print(e);
+  }
+}
+
+void addCommunity() async {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 }

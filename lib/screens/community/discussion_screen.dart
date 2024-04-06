@@ -1,11 +1,22 @@
 import 'package:alumnet/models/community.dart';
+import 'package:alumnet/models/discussion.dart';
+import 'package:alumnet/models/user.dart';
+import 'package:alumnet/screens/community/discussion_detail_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DiscussionScreen extends StatelessWidget {
+class DiscussionScreen extends StatefulWidget {
   final Community community;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  var isMember = false;
 
   DiscussionScreen({required this.community});
 
+  @override
+  State<DiscussionScreen> createState() => _DiscussionScreenState();
+}
+
+class _DiscussionScreenState extends State<DiscussionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,41 +47,59 @@ class DiscussionScreen extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    child: Icon(Icons.people),
-                    radius: 25,
-                  ),
-                  SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      Text(
-                        community.name,
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                      CircleAvatar(
+                        child: Icon(Icons.people),
+                        radius: 25,
                       ),
-                      Text(
-                        "${community.activeMembers} active members",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.community.name,
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            "${widget.community.activeMembers} active members",
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
                       ),
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            widget.isMember = !widget.isMember;
+                          });
+                        },
+                        child: Text(
+                          widget.isMember ? "Joined" : "Join",
+                          style: TextStyle(
+                              color: widget.isMember
+                                  ? Colors.black
+                                  : Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          backgroundColor:
+                              widget.isMember ? null : Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            side: widget.isMember
+                                ? BorderSide(color: Colors.black)
+                                : BorderSide.none,
+                          ),
+                        ),
+                      )
                     ],
                   ),
-                  Spacer(),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      "Join",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15)),
-                    ),
-                  ),
+                  SizedBox(height: 5),
+                  Text(widget.community.bio)
                 ],
               ),
             ),
@@ -78,6 +107,20 @@ class DiscussionScreen extends StatelessWidget {
               padding: EdgeInsets.all(8),
               child: Row(
                 children: [
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: Text(
+                      "Add Posts",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey[300],
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                  SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: () {},
                     child: Text(
@@ -112,15 +155,21 @@ class DiscussionScreen extends StatelessWidget {
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: 4,
+              itemCount: 1,
               itemBuilder: (context, index) {
-                return DiscussionPost(
-                    discussion: Discussion(
-                        headline:
-                            "NFTs in Web3.0 era: Digital Ownerships and tokenisation of assets",
-                        imageUrl:
-                            "https://media.istockphoto.com/id/1365606637/photo/shot-of-a-young-businesswoman-using-a-digital-tablet-while-at-work.jpg?s=2048x2048&w=is&k=20&c=f_VTk3oZAfP5Ja7O3OQ1SK9WQd99EAh3ZcfUmO7lo64=",
-                        activityCount: 120));
+                return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DiscussionDetailScreen(
+                              discussion: sampleDiscussion,
+                              community: widget.community),
+                        ),
+                      );
+                    },
+                    child: DiscussionPost(discussion: sampleDiscussion));
+                ;
               },
             ),
           ],
@@ -130,20 +179,8 @@ class DiscussionScreen extends StatelessWidget {
   }
 }
 
-class Discussion {
-  final String headline;
-  final String imageUrl;
-  final int activityCount;
-
-  Discussion(
-      {required this.headline,
-      required this.imageUrl,
-      required this.activityCount});
-}
-
 class DiscussionPost extends StatelessWidget {
   final Discussion discussion;
-
   DiscussionPost({required this.discussion});
 
   @override
@@ -153,17 +190,39 @@ class DiscussionPost extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              CircleAvatar(
+                backgroundImage: NetworkImage(discussion.postedBy.profilepic),
+                radius: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                discussion.postedBy.name,
+                style: TextStyle(
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                "5h",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                ),
+              ),
+              Spacer(),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.more_vert),
+              ),
+            ],
+          ),
           Text(
             discussion.headline,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           SizedBox(height: 8),
-          Image.network(
-            discussion.imageUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: 200,
-          ),
           SizedBox(height: 8),
           Row(
             children: [
