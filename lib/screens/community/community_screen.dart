@@ -1,6 +1,7 @@
 import 'package:alumnet/models/community.dart';
 import 'package:alumnet/screens/community/batchList_screen.dart';
 import 'package:alumnet/screens/community/discussion_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class CommunityPage extends StatelessWidget {
@@ -28,6 +29,12 @@ class CommunityPage extends StatelessWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 30),
               ),
             ),
+            TextButton(
+              onPressed: () {
+                addUsersToFirebase();
+              },
+              child: Text('Add users to Firebase'),
+            ),
             SizedBox(height: 10),
             Expanded(
               child: GridView.builder(
@@ -48,16 +55,28 @@ class CommunityPage extends StatelessWidget {
                                   ? "PhD"
                                   : index == 4
                                       ? "Faculty"
-                                      : "Branch ${index + 1}"),
+                                      : index == 2
+                                          ? "ECE"
+                                          : index == 1
+                                              ? "CSE"
+                                              : index == 0
+                                                  ? "DSAI"
+                                                  : ""),
                         ),
                       );
                     },
                     child: DepartmentBlock(
                         text: index == 3
-                            ? "PhD\nScholars"
+                            ? "PhD Students"
                             : index == 4
                                 ? "Faculty"
-                                : "Branch ${index + 1}"),
+                                : index == 2
+                                    ? "ECE"
+                                    : index == 1
+                                        ? "CSE"
+                                        : index == 0
+                                            ? "DSAI"
+                                            : ""),
                   );
                 },
               ),
@@ -168,5 +187,56 @@ class CommunityBlock extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+void addUsersToFirebase() async {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  try {
+    List<Map<String, dynamic>> userData = [
+      {
+        "name": 'Aniket Raj',
+        "profilepic":
+            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+        "username": '20bds007',
+        "batch": '2024',
+        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
+      },
+      {
+        "name": 'Aman Gupta',
+        "profilepic":
+            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+        "username": '20bds024',
+        "batch": '2024',
+        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
+      },
+      {
+        "name": 'Chirag Mittal',
+        "profilepic":
+            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+        "username": '20bds017',
+        "batch": '2024',
+        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
+      },
+      {
+        "name": 'Devansh Purvar',
+        "profilepic":
+            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+        "username": '20bds018',
+        "batch": '2024',
+        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
+      },
+    ];
+
+    for (var userData in userData) {
+      String collectionPath = 'users/DSAI/batches/Batch 2024';
+      String documentID = userData['username'];
+      await _firestore
+          .collection(collectionPath + '/users')
+          .doc(documentID)
+          .set(userData);
+    }
+  } catch (error) {
+    print("Error:$error");
   }
 }

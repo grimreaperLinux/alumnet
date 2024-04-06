@@ -1,24 +1,45 @@
 import 'package:alumnet/screens/community/batchDetails_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class BatchList extends StatelessWidget {
+class BatchList extends StatefulWidget {
   final String branch;
-  final List<String> data = [
-    "Batch 2024",
-    "Batch 2023",
-    "Batch 2022",
-    "Batch 2021",
-    "Batch 2020",
-    "Batch 2019"
-  ];
 
   BatchList({required this.branch});
+
+  @override
+  _BatchListState createState() => _BatchListState();
+}
+
+class _BatchListState extends State<BatchList> {
+  List<String> data = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  void _fetchData() async {
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await _firestore
+        .collection('users')
+        .doc(widget.branch)
+        .collection('batches')
+        .get();
+
+    setState(() {
+      data = querySnapshot.docs.map((doc) => doc.id).toList();
+      print(data);
+      print(widget.branch);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(branch),
+        title: Text(widget.branch),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -38,8 +59,10 @@ class BatchList extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      BatchDetails(branch: branch, batch: data[index]),
+                  builder: (context) => BatchDetails(
+                    branch: widget.branch,
+                    batch: data[index],
+                  ),
                 ),
               );
             },
