@@ -100,7 +100,7 @@ class _CreateDiscussionScreenState extends State<CreateDiscussionScreen> {
 
   void addDiscussion() async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-    final User user = User.fromdummyData();
+    final User user = User.fromDummyData();
     List<DiscussionElement> elements = [
       DiscussionElement(type: ContentType.text, value: content)
     ];

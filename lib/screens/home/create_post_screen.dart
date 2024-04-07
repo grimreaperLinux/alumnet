@@ -47,7 +47,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
   }
 
   void _pickImage() async {
-    final List<XFile> pickedFiles = await _picker.pickMultiImage(imageQuality: 20);
+    final List<XFile> pickedFiles =
+        await _picker.pickMultiImage(imageQuality: 20);
     setState(() {
       _images.addAll(pickedFiles);
     });
@@ -85,13 +86,15 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
       showTopSnackBar(
         Overlay.of(context),
         const CustomSnackBar.error(
-          message: "Content cannot be left empty. You have to save your intended content.",
+          message:
+              "Content cannot be left empty. You have to save your intended content.",
         ),
       );
       return;
     }
 
-    for (Map<String, TextEditingController> linkController in _linkControllers) {
+    for (Map<String, TextEditingController> linkController
+        in _linkControllers) {
       String placeholderText = linkController['text']!.text;
       String linkText = linkController['link']!.text;
 
@@ -104,7 +107,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
         showTopSnackBar(
           Overlay.of(context),
           CustomSnackBar.error(
-            message: "Fill both placeholder text and link for Link number $index",
+            message:
+                "Fill both placeholder text and link for Link number $index",
           ),
         );
         return;
@@ -126,7 +130,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
         String fileName = imagefile.path.split('/').last;
         final imageRef = fileName;
 
-        String downloadUrl = await FileUpload().imageupload(imagefile, imageRef);
+        String downloadUrl =
+            await FileUpload().imageupload(imagefile, imageRef);
         imageUrls.add(downloadUrl);
       }
     } catch (e) {
@@ -164,7 +169,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
       return;
     }
 
-    if (imageUrls.length != _images.length || documentUrls.length != documents.length) {
+    if (imageUrls.length != _images.length ||
+        documentUrls.length != documents.length) {
       setState(() {
         isLoading = false;
       });
@@ -177,12 +183,16 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
       return;
     }
 
-    User user = User.fromdummyData();
-    PostItem post = PostItem(userId: user.id, timeOfCreation: DateTime.now().toUtc(), text: postContent);
+    User user = User.fromDummyData();
+    PostItem post = PostItem(
+        userId: user.id,
+        timeOfCreation: DateTime.now().toUtc(),
+        text: postContent);
 
     for (String documentUrl in documentUrls) {
       int index = documentUrls.indexOf(documentUrl);
-      Attachment attachment = Attachment(name: documentNames[index], downloadUrl: documentUrl);
+      Attachment attachment =
+          Attachment(name: documentNames[index], downloadUrl: documentUrl);
       post.attachments.add(attachment);
     }
 
@@ -197,7 +207,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     postContent = content.isNotEmpty ? content : '';
   }
 
-  void liftSelectedDocuments(List<File?> selecteddocuments, List<String> selectedDocumentNames) {
+  void liftSelectedDocuments(
+      List<File?> selecteddocuments, List<String> selectedDocumentNames) {
     documents = selecteddocuments;
     documentNames = selectedDocumentNames;
   }
@@ -280,7 +291,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8.0),
-                            child: Image.file(File(item.path), fit: BoxFit.cover, width: 1000),
+                            child: Image.file(File(item.path),
+                                fit: BoxFit.cover, width: 1000),
                           ),
                           Positioned(
                             right: -10, // Adjust the position accordingly
@@ -366,14 +378,18 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: _linkControllers[i]['link']!,
-                        decoration: const TextFieldCustom(hinttext: "Enter Link", labeltext: "Link").textfieldDecoration(),
+                        decoration: const TextFieldCustom(
+                                hinttext: "Enter Link", labeltext: "Link")
+                            .textfieldDecoration(),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
                         controller: _linkControllers[i]['text']!,
-                        decoration: const TextFieldCustom(hinttext: "Placeholder Text", labeltext: "Text").textfieldDecoration(),
+                        decoration: const TextFieldCustom(
+                                hinttext: "Placeholder Text", labeltext: "Text")
+                            .textfieldDecoration(),
                       ),
                     ),
                     IconButton(

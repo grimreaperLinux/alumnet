@@ -1,6 +1,6 @@
 import "package:alumnet/models/user.dart";
 
-final sampleUser = User.fromdummyData();
+final sampleUser = User.fromDummyData();
 
 class Discussion {
   final User postedBy;
