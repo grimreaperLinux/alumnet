@@ -1,36 +1,66 @@
-class User {
-  late String id;
-  final String profilepic;
-  final String name;
-  final String username;
-  final String batch;
-  final String about;
+import 'package:flutter/material.dart';
 
-  User(
-      {required this.name,
-      required this.profilepic,
-      required this.username,
-      required this.about,
-      required this.batch});
+class User {
+  final String id;
+  String profilepic = '';
+  final String name;
+  String username = '';
+  List<String> likedPosts = [];
+  String batch = '';
+  String about = '';
+  String branch = '';
+  final String email;
+  String instituteId = '';
+
+  User({
+    required this.name,
+    this.username = '',
+    required this.id,
+    required this.email,
+    this.batch = '',
+    this.about = '',
+    this.branch = '',
+    this.instituteId = '',
+    this.profilepic = '',
+  });
 
   factory User.fromdummyData() {
-    return User(
+    User user = User(
         name: 'Aniket Raj',
-        profilepic:
-            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-        username: '20bds007',
-        batch: '2024',
-        about: 'FatAss, Genius, Billionaire, Playboy, Philanthropist');
+        id: 'this_is_a_special_id',
+        email: 'ani9431619703@gmail.com',
+        username: 'grimreaperLinux');
+    user.batch = '2024';
+    user.about = 'Genius, Billionaire, Playboy, Philanthropist';
+    user.branch = "DSAI";
+    user.profilepic =
+        'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D';
+    user.likedPosts = [];
+
+    return user;
   }
-  factory User.fromMap(Map<String, dynamic> map) {
-    return User(
-      name: map['name'] ?? '',
-      profilepic: map['profilepic'] ?? '',
-      username: map['username'] ?? '',
-      batch: map['batch'] ?? '',
-      about: map['about'] ?? '',
-    );
+}
+
+class CurrentUser extends ChangeNotifier {
+  final List<User> _currentUser = [];
+
+  User get currentUser => _currentUser[0];
+
+  void setCurrentUser(Map<String, dynamic> userData) {
+    _currentUser.add(User(
+        name: userData['fullName'],
+        id: userData['id'],
+        email: userData['email'],
+        instituteId: userData['instituteId'],
+        profilepic: userData.containsKey('profilepic')
+            ? userData['profilepic']
+            : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
+        about: userData.containsKey('about') ? userData['about'] : '',
+        batch: userData.containsKey('batch') ? userData['batch'] : ''));
+
+    print(currentUser.instituteId);
   }
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,

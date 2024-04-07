@@ -1,13 +1,18 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:alumnet/models/feed_post.dart';
+import 'package:alumnet/models/user.dart';
+import 'package:alumnet/services/firebase_storage.dart';
 import 'package:alumnet/widgets/content_input_card.dart';
 import 'package:alumnet/widgets/select_documents.dart';
 import 'package:alumnet/widgets/test_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:provider/provider.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class PostCreationScreen extends StatefulWidget {
   static const routename = "./post_creation";
@@ -27,6 +32,9 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
   ];
   final TextEditingController _contentController = TextEditingController();
   String postContent = '';
+  List<File?> documents = [];
+  List<String> documentNames = [];
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -39,12 +47,10 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
   }
 
   void _pickImage() async {
-    final List<XFile>? pickedFiles = await _picker.pickMultiImage();
-    if (pickedFiles != null) {
-      setState(() {
-        _images.addAll(pickedFiles);
-      });
-    }
+    final List<XFile> pickedFiles = await _picker.pickMultiImage(imageQuality: 20);
+    setState(() {
+      _images.addAll(pickedFiles);
+    });
   }
 
   void _removeImage(int index) {
@@ -70,10 +76,10 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
     });
   }
 
-  void _createPost() {
+  void _createPost() async {
     // Performing checks
 
-    List<PostLink> links = [];
+    List<PostLink> postLinks = [];
 
     if (postContent.isEmpty) {
       showTopSnackBar(
@@ -104,43 +110,155 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
         return;
       }
 
-      links.add(PostLink(link: linkText, text: placeholderText));
+      postLinks.add(PostLink(link: linkText, text: placeholderText));
     }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    // upload the images
+    List<String> imageUrls = [];
+
+    try {
+      for (XFile image in _images) {
+        File imagefile = File(image.path);
+        String fileName = imagefile.path.split('/').last;
+        final imageRef = fileName;
+
+        String downloadUrl = await FileUpload().imageupload(imagefile, imageRef);
+        imageUrls.add(downloadUrl);
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      showTopSnackBar(
+        Overlay.of(context),
+        const CustomSnackBar.error(
+          message: "Image Upload Failed for this Post",
+        ),
+      );
+
+      return;
+    }
+
+    List<String> documentUrls = [];
+
+    try {
+      for (File? document in documents) {
+        String downloadUrl = await FileUpload().pdfupload(document as File);
+        documentUrls.add(downloadUrl);
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      showTopSnackBar(
+        Overlay.of(context),
+        const CustomSnackBar.error(
+          message: "Document Upload Failed for this Post",
+        ),
+      );
+
+      return;
+    }
+
+    if (imageUrls.length != _images.length || documentUrls.length != documents.length) {
+      setState(() {
+        isLoading = false;
+      });
+      showTopSnackBar(
+        Overlay.of(context),
+        const CustomSnackBar.error(
+          message: "Something went wrong in uploading those files",
+        ),
+      );
+      return;
+    }
+
+    User user = User.fromdummyData();
+    PostItem post = PostItem(userId: user.id, timeOfCreation: DateTime.now().toUtc(), text: postContent);
+
+    for (String documentUrl in documentUrls) {
+      int index = documentUrls.indexOf(documentUrl);
+      Attachment attachment = Attachment(name: documentNames[index], downloadUrl: documentUrl);
+      post.attachments.add(attachment);
+    }
+
+    post.images = imageUrls;
+    post.links = postLinks;
+
+    await Provider.of<PostList>(context, listen: false).createPostItem(post);
+    Navigator.of(context).pop(post);
   }
 
   void liftPostContent(String content) {
     postContent = content.isNotEmpty ? content : '';
   }
 
+  void liftSelectedDocuments(List<File?> selecteddocuments, List<String> selectedDocumentNames) {
+    documents = selecteddocuments;
+    documentNames = selectedDocumentNames;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Create Post'),
-        actions: [
-          IconButton.filledTonal(
-            onPressed: () {
-              _createPost();
-            },
-            icon: const Icon(Icons.check),
-            color: Colors.green,
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextInputCard(
-                getContent: liftPostContent,
-              ),
-              _buildImageUploadCard(),
-              _buildLinkInputCard(),
-              DocumentPicker()
-            ],
+      body: Stack(
+        children: [
+          Padding(
+            // This padding is no longer necessary at this level since you'll want the AppBar to be covered as well.
+            padding: const EdgeInsets.all(0),
+            child: Column(
+              children: [
+                AppBar(
+                  title: Text('Create Post'),
+                  actions: [
+                    IconButton.filledTonal(
+                      onPressed: () {
+                        _createPost();
+                      },
+                      icon: const Icon(Icons.check),
+                      color: Colors.green,
+                    )
+                  ],
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        children: [
+                          TextInputCard(
+                            getContent: liftPostContent,
+                          ),
+                          _buildImageUploadCard(),
+                          _buildLinkInputCard(),
+                          DocumentPicker(
+                            getSelectedDocuments: liftSelectedDocuments,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          if (isLoading)
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                alignment: Alignment.center,
+                child: LoadingAnimationWidget.inkDrop(
+                  color: Colors.white,
+                  size: 50,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

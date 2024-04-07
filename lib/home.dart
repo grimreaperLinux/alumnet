@@ -1,5 +1,7 @@
 import 'package:alumnet/models/tab_item.dart';
+import 'package:alumnet/models/user.dart';
 import 'package:alumnet/navigation/custom_tab_bar.dart';
+import 'package:alumnet/repository/auth_repo/auth_repo.dart';
 import 'package:alumnet/profile/profile_screen.dart';
 import 'package:alumnet/screens/community/community_screen.dart';
 import 'package:alumnet/screens/community/createCommunity_screen.dart';
@@ -8,15 +10,30 @@ import 'package:alumnet/screens/messages_screen.dart';
 import 'package:alumnet/screens/notifications_screen.dart';
 import 'package:alumnet/screens/search_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AlumnetHome extends StatefulWidget {
-  const AlumnetHome({super.key});
+  final Map<String, dynamic> userDoc;
+
+  const AlumnetHome({super.key, required this.userDoc});
 
   @override
   State<AlumnetHome> createState() => _AlumnetHomeState();
 }
 
 class _AlumnetHomeState extends State<AlumnetHome> {
+  // User currentUser = User(
+  //   id: '8BICx4WqZatmhFNsgmDZ',
+  //   batch: '2024',
+  //   username: "20bds016",
+  //   name: "Chirag",
+  //   about: "Hello User",
+  //   profilepic:
+  //       'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+  //   branch: 'DSAI',
+  //   email: "chirag@gmail.com",
+  // );
+
   final List _pages = [
     HomePage(),
     SearchPage(),
@@ -25,6 +42,12 @@ class _AlumnetHomeState extends State<AlumnetHome> {
     MessagesPage(),
     Profile()
   ];
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<CurrentUser>(context, listen: false)
+        .setCurrentUser(widget.userDoc);
+  }
 
   int _index = 0;
 
@@ -54,6 +77,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
 
   @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<CurrentUser>(context).currentUser;
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -166,7 +190,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                 IconButton(
                   icon: const Icon(Icons.verified_user),
                   onPressed: () {
-                    // Handle settings icon action
+                    AuthRepo.instance.logout();
                   },
                 ),
               ],

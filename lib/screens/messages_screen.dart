@@ -1,25 +1,85 @@
 import 'package:alumnet/screens/chatting/chatting_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
+import 'dart:async';
+import 'package:provider/provider.dart';
 
-class MessagesPage extends StatelessWidget {
-  User currentUser = User(batch: '2024',username: "chirag",name:"chirag",about: "Somrthing",profilepic: 'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',);
-  final List<Map<String,dynamic>> users = [
+class MessagesPage extends StatefulWidget {
+  @override
+  State<MessagesPage> createState() => _MessagesPageState();
+}
+
+class _MessagesPageState extends State<MessagesPage> {
+  final loggedInUserId = '8BICx4WqZatmhFNsgmDZ';
+  TextEditingController _controller = TextEditingController();
+  Timer? _debounce;
+  FocusNode _focusNode = FocusNode();
+  var isFocus = false;
+  var searchQueryText = "";
+
+  final List<Map<String, dynamic>> users = [
     {
-      "user": User(about: 'Something',batch: '2024',name: "aniket", username: 'aniket', profilepic: 'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',),
+      "user": User(
+          id: "45",
+          email: "chirag@gmail.com",
+          about: 'Something',
+          batch: '2024',
+          name: "aniket",
+          username: 'aniket',
+          profilepic:
+              'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',
+          branch: 'DSAI'),
       "lastChatDate": DateTime.now().subtract(Duration(days: 1)),
       "lastMessage": 'Hello there!',
     }
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleTextChanged);
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    // Dispose the TextEditingController and the FocusNode to avoid memory leaks
+    _controller.dispose();
+    _debounce?.cancel(); // Cancel the debounce timer
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleTextChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(Duration(seconds: 1), () {
+      String searchText = _controller.text;
+      setState(() {
+        searchQueryText = searchText;
+      });
+    });
+  }
+
+  void _handleFocusChange() {
+    if (isFocus != _focusNode.hasFocus) {
+      setState(() {
+        isFocus = _focusNode.hasFocus;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<CurrentUser>(context).currentUser;
     return Scaffold(
       body: Column(
         children: [
           Padding(
             padding: EdgeInsets.all(16.0),
             child: TextField(
+              controller: _controller,
+              focusNode: _focusNode,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.grey[200],
@@ -28,24 +88,97 @@ class MessagesPage extends StatelessWidget {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30.0), // Curved corners
                 ),
-                contentPadding: EdgeInsets.all(0)
+                contentPadding: EdgeInsets.all(0),
               ),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                return FrequentChatItem(
-                  chatId: '$index',
-                  chattingWithUser: users[index]['user'],
-                  lastMessageTime: users[index]['lastChatDate'],
-                  lastChatMessage: users[index]['lastMessage'],
-                  currentUser: currentUser,
-                );
-              },
-            ),
-          ),
+          !isFocus
+              ? Expanded(
+                  child: StreamBuilder(
+                    stream: FirebaseFirestore.instance.collection('chat').where('Users', arrayContains: currentUser.id).snapshots(),
+                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      }
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return Text('No Active Chats, Search and Find People');
+                      }
+
+                      return ListView.builder(
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          final listItem = snapshot.data!.docs[index];
+                          List<dynamic> users = snapshot.data!.docs[index]['users'];
+
+                          users.removeWhere(
+                            (element) => element == currentUser.id,
+                          );
+                          final otherUserId = users[0];
+                          print(otherUserId);
+
+                          return FrequentChatItem(
+                            chatId: listItem.id,
+                            chattingWithUser: User(
+                                id: listItem.id,
+                                username: listItem[otherUserId]['username'],
+                                batch: listItem[otherUserId]['batch'],
+                                branch: listItem[otherUserId]['branch'],
+                                about: listItem[otherUserId]['about'],
+                                name: listItem[otherUserId]['name'],
+                                profilepic: listItem[otherUserId]['profilepic'],
+                                email: '' // to be filled by chirag
+                                ),
+                            lastMessageTime: listItem['lastMessageTime'].toDate(),
+                            lastChatMessage: listItem['lastMessage'],
+                            currentUser: currentUser,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                )
+              : searchQueryText.isNotEmpty
+                  ? Expanded(
+                      child: StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('Users')
+                            .where('name', isGreaterThanOrEqualTo: searchQueryText)
+                            .where('name', isLessThan: searchQueryText + 'z')
+                            .snapshots(),
+                        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          }
+                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                            return Text('No matching documents found.');
+                          }
+
+                          return ListView.builder(
+                            itemCount: snapshot.data!.docs.length,
+                            itemBuilder: (context, index) {
+                              final listItem = snapshot.data!.docs[index];
+                              return FrequentChatItem(
+                                chatId: '',
+                                chattingWithUser: User(
+                                    id: listItem.id,
+                                    username: listItem['username'],
+                                    batch: listItem['batch'],
+                                    branch: listItem['branch'],
+                                    about: listItem['about'],
+                                    name: listItem['name'],
+                                    profilepic: listItem['profilepic'],
+                                    email: '' // to be filled by chirag
+                                    ),
+                                lastMessageTime: DateTime.now(),
+                                lastChatMessage: '',
+                                currentUser: currentUser,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    )
+                  : Text("Type to find people"),
         ],
       ),
     );
@@ -68,11 +201,51 @@ class FrequentChatItem extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  Future<String> _createOrRetrieveChat() async {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('chat').where('users', isEqualTo: [currentUser.id, chattingWithUser.id]).get();
+    List<QueryDocumentSnapshot> documents = querySnapshot.docs;
+
+    if (documents.isEmpty) {
+      final createdObject = await FirebaseFirestore.instance.collection('chat').add({
+        "users": [currentUser.id, chattingWithUser.id],
+        "${chattingWithUser.id}": {
+          "name": chattingWithUser.name,
+          "username": chattingWithUser.username,
+          "profilepic": chattingWithUser.profilepic,
+          "batch": chattingWithUser.batch,
+          "branch": chattingWithUser.branch,
+          "about": chattingWithUser.about
+        },
+        "${currentUser.id}": {
+          "name": currentUser.name,
+          "username": currentUser.username,
+          "profilepic": currentUser.profilepic,
+          "batch": currentUser.batch,
+          "branch": currentUser.branch,
+          "about": currentUser.about
+        },
+        "created_at": DateTime.now(),
+        "lastMessage": "",
+        "lastMessageTime": DateTime.now()
+      });
+
+      return createdObject.id;
+    } else {
+      return documents[0].id;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ChatScreen(currentUser: currentUser,chattingWithUser: chattingWithUser,)));
+      onTap: () async {
+        var chatIdToPass = chatId;
+        if (chatIdToPass == '') {
+          chatIdToPass = await _createOrRetrieveChat();
+        }
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => ChatScreen(currentUser: currentUser, chattingWithUser: chattingWithUser, chatId: chatIdToPass)));
       },
       child: Container(
         padding: EdgeInsets.all(16.0),
