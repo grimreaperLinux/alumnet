@@ -307,7 +307,3 @@ void addCommunitiesToFirebase() async {
     print(e);
   }
 }
-
-void addCommunity() async {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-}

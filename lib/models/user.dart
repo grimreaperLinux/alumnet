@@ -31,4 +31,13 @@ class User {
       about: map['about'] ?? '',
     );
   }
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'profilepic': profilepic,
+      'username': username,
+      'batch': batch,
+      'about': about,
+    };
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:alumnet/models/community.dart';
 import 'package:alumnet/models/discussion.dart';
 import 'package:alumnet/models/user.dart';
+import 'package:alumnet/screens/community/createDiscussion_screen.dart';
 import 'package:alumnet/screens/community/discussion_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -17,6 +18,27 @@ class DiscussionScreen extends StatefulWidget {
 }
 
 class _DiscussionScreenState extends State<DiscussionScreen> {
+  List<Discussion> data = [];
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  void _fetchData() async {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    QuerySnapshot<Map<String, dynamic>> querySnapshot = await _firestore
+        .collection('discussions')
+        .doc(widget.community.name)
+        .collection('posts')
+        .get();
+    setState(() {
+      data = querySnapshot.docs
+          .map((doc) => Discussion.fromMap(doc.data()))
+          .toList();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +130,13 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
               child: Row(
                 children: [
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CreateDiscussionScreen(
+                                  community: widget.community)));
+                    },
                     child: Text(
                       "Add Posts",
                       style: TextStyle(color: Colors.black),
@@ -155,7 +183,7 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
             ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              itemCount: 1,
+              itemCount: data.length,
               itemBuilder: (context, index) {
                 return GestureDetector(
                     onTap: () {
@@ -163,12 +191,12 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => DiscussionDetailScreen(
-                              discussion: sampleDiscussion,
+                              discussion: data[index],
                               community: widget.community),
                         ),
                       );
                     },
-                    child: DiscussionPost(discussion: sampleDiscussion));
+                    child: DiscussionPost(discussion: data[index]));
                 ;
               },
             ),
