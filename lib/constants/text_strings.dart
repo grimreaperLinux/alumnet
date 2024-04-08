@@ -11,8 +11,9 @@ const String tOnBoardingCounter1 = '1/3';
 const String tOnBoardingCounter2 = '2/3';
 const String tOnBoardingCounter3 = '3/3';
 
-const String tWelcomeTitle = 'WelcomeScreenTitle';
-const String tWelcomeSubTitle = 'WelcomeScreenSubTitle';
+const String tWelcomeTitle = 'Welcome to Alumni Network';
+const String tWelcomeSubTitle =
+    'Connecting Past, Present, and Future Graduates';
 
 const tLogin = "Login";
 const tSignUp = "SignUp";
