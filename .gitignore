@@ -46,3 +46,6 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 pubspec.lock
+typesense-data
+typesense-server/node_modules
+typesense-server/firebase-config.js

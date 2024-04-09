@@ -1,3 +1,4 @@
+import 'package:alumnet/models/user.dart';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -124,6 +125,7 @@ class Attachment {
 
 class PostList extends ChangeNotifier {
   final List<PostItem> _postList = [];
+  final List<User> _userList = [];
 
   FirebaseFirestore db = FirebaseFirestore.instance;
   DocumentSnapshot? _lastDocument;
@@ -133,12 +135,16 @@ class PostList extends ChangeNotifier {
     return [..._postList];
   }
 
+  Map<String, User> get userMap {
+    return {for (var user in _userList) user.id: user};
+  }
+
   Future<void> createPostItem(PostItem post) async {
     try {
-      DocumentReference documentRef = await db.collection('posts').add(post.toJson());
+      DocumentReference documentRef = await db.collection('Posts').add(post.toJson());
       post.id = documentRef.id;
-      _postList.add(post);
-      print(_postList);
+      _postList.insert(0, post);
+      await _updateUserList([post]);
       notifyListeners();
     } catch (error) {
       print(error);
@@ -148,7 +154,7 @@ class PostList extends ChangeNotifier {
   Future<void> getPosts() async {
     if (!hasMorePosts) return;
 
-    var query = db.collection('posts').orderBy('timeOfCreation', descending: true).limit(5);
+    var query = db.collection('Posts').orderBy('timeOfCreation', descending: true).limit(5);
 
     if (_lastDocument != null) {
       query = query.startAfterDocument(_lastDocument!);
@@ -174,9 +180,78 @@ class PostList extends ChangeNotifier {
         return PostItem.fromFirestore(data, doc.id, doc.exists);
       }).toList();
       _postList.addAll(posts);
+      await _updateUserList(posts);
       notifyListeners();
     } catch (error) {
       print(error);
     }
+  }
+
+  Future<void> _updateUserList(List<PostItem> posts) async {
+    var userIds = posts.map((post) => post.userId).toSet();
+
+    for (var userId in userIds) {
+      var userDocSnapshot = await db.collection('Users').doc(userId).get();
+      if (userDocSnapshot.exists) {
+        var userData = userDocSnapshot.data()!;
+        print(userData);
+        var user = User.fromFirestore(userData, userDocSnapshot.id);
+        _userList.add(user);
+      }
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> toggleLikePost(String userId, String postId, bool isLiked) async {
+    try {
+      DocumentReference postRef = db.collection('Posts').doc(postId);
+      if (isLiked) {
+        await postRef.update({
+          'likes': FieldValue.arrayUnion([userId]),
+        });
+      } else {
+        await postRef.update({
+          'likes': FieldValue.arrayRemove([userId]),
+        });
+      }
+      int postIndex = _postList.indexWhere((post) => post.id == postId);
+      if (postIndex != -1) {
+        PostItem post = _postList[postIndex];
+
+        if (isLiked) {
+          if (!post.likes.contains(userId)) {
+            post.likes.add(userId);
+          }
+        } else {
+          post.likes.remove(userId);
+        }
+
+        _postList[postIndex] = post;
+        notifyListeners();
+      }
+    } catch (e) {
+      print("Error toggling like for post: $e");
+    }
+  }
+
+  Future<void> deletePost(String postId) async {
+    try {
+      await db.collection('Posts').doc(postId).delete();
+      _postList.removeWhere((post) => post.id == postId);
+      notifyListeners();
+    } catch (e) {
+      print("Error deleting post: $e");
+    }
+  }
+
+  Future<void> refreshPosts() async {
+    _postList.clear();
+    _userList.clear();
+    _lastDocument = null;
+    hasMorePosts = true;
+    notifyListeners();
+
+    await getPosts();
   }
 }

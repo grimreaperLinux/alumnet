@@ -31,5 +31,6 @@ class CustomIcons {
 
   static const IconData thumbs_down = IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData doc_text = IconData(0xf0f6, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData thumbs_up_alt = IconData(0xf164, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData thumbsup = IconData(0xf340, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

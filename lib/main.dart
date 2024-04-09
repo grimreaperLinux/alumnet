@@ -7,6 +7,7 @@ import 'package:alumnet/models/user.dart';
 import 'package:alumnet/repository/auth_repo/auth_repo.dart';
 import 'package:alumnet/models/feed_post.dart';
 import 'package:alumnet/screens/home/create_post_screen.dart';
+import 'package:alumnet/screens/search_screen.dart';
 import 'package:alumnet/utils/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,7 +41,10 @@ class MyApp extends StatelessWidget {
           darkTheme: TAppTheme.darkTheme,
           themeMode: ThemeMode.system,
           home: WelcomeScreen(),
-          routes: {PostCreationScreen.routename: (context) => PostCreationScreen()},
+          routes: {
+            PostCreationScreen.routename: (context) => PostCreationScreen(),
+            SearchPage.routename: (context) => SearchPage(),
+          },
         ),
       ),
     );
