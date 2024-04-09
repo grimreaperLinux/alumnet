@@ -202,7 +202,7 @@ class CommunityBlock extends StatelessWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(0, 30),
+                    minimumSize: Size(60, 30),
                     backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25)),

@@ -1,3 +1,4 @@
+import "package:alumnet/models/comment.dart";
 import "package:alumnet/models/user.dart";
 
 final sampleUser = User.fromDummyData();
@@ -7,14 +8,12 @@ class Discussion {
   final DateTime postedAt;
   final String headline;
   final DiscussionContent content;
-  final int activityCount;
 
   Discussion({
     required this.postedBy,
     required this.postedAt,
     required this.headline,
     required this.content,
-    required this.activityCount,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,7 +22,6 @@ class Discussion {
       'postedAt': postedAt.toIso8601String(),
       'headline': headline,
       'content': content.toMap(),
-      'activityCount': activityCount,
     };
   }
 
@@ -36,14 +34,12 @@ class Discussion {
     final String headline = map['headline'] ?? '';
     final DiscussionContent content =
         DiscussionContent.fromMap(map['content'] ?? {});
-    final int activityCount = map['activityCount'] ?? 0;
 
     return Discussion(
       postedBy: postedBy,
       postedAt: postedAt,
       headline: headline,
       content: content,
-      activityCount: activityCount,
     );
   }
 }
@@ -117,7 +113,6 @@ class DiscussionElement {
 
 enum ContentType { text, image, link }
 
-// Sample content elements
 List<DiscussionElement> contentElements = [
   DiscussionElement(
     type: ContentType.text,
@@ -134,15 +129,12 @@ List<DiscussionElement> contentElements = [
   ),
 ];
 
-// Create a DiscussionContent instance
 DiscussionContent discussionContent =
     DiscussionContent(elements: contentElements);
 
-// Sample discussion instance
 Discussion sampleDiscussion = Discussion(
   postedBy: sampleUser,
   postedAt: DateTime.now(),
   headline: "NFTs in Web3.0 era: Digital Ownerships and tokenisation of assets",
   content: discussionContent,
-  activityCount: 120,
 );

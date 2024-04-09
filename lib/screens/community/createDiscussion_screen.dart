@@ -112,7 +112,6 @@ class _CreateDiscussionScreenState extends State<CreateDiscussionScreen> {
       postedAt: DateTime.now(),
       headline: headline,
       content: discussionContent,
-      activityCount: 10,
     );
 
     try {

@@ -1,6 +1,13 @@
+import 'package:alumnet/models/comment.dart';
 import 'package:alumnet/models/community.dart';
 import 'package:alumnet/models/discussion.dart';
+import 'package:alumnet/models/user.dart';
+import 'package:alumnet/widgets/feed_post.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class DiscussionDetailScreen extends StatefulWidget {
   final Discussion discussion;
@@ -13,7 +20,7 @@ class DiscussionDetailScreen extends StatefulWidget {
 }
 
 class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
-  String comment = '';
+  String commentContent = '';
 
   @override
   Widget build(BuildContext context) {
@@ -83,41 +90,148 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     // getContent(),
-                    ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: Icon(Icons.message),
-                      label: Text(widget.discussion.activityCount.toString()),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        padding: EdgeInsets.all(10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          side: BorderSide(color: Colors.grey),
-                        ),
-                      ),
-                    ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    //   children: <Widget>[
+                    //     IconTextButton(
+                    //       iconData: Icons.thumb_up,
+                    //       text: "21",
+                    //       onTap: () {},
+                    //     ),
+                    //     IconTextButton(
+                    //       iconData: Icons.comment,
+                    //       text: "20",
+                    //       onTap: () {},
+                    //     ),
+                    //   ],
+                    // ),
+
+                    StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('discussions')
+                            .doc(widget.community.name)
+                            .collection('posts')
+                            .doc(widget.discussion.headline)
+                            .collection('comments')
+                            .snapshots(),
+                        builder:
+                            (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return Center(
+                                child: Text("Be the first one to comment"));
+                          }
+                          final comments = snapshot.data!.docs;
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: comments.length,
+                            itemBuilder: (context, index) {
+                              final comment = comments[index];
+                              return Container(
+                                padding: EdgeInsets.all(10),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                          comment['user']['profilepic']),
+                                      radius: 20,
+                                    ),
+                                    SizedBox(
+                                      width: 5,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              comment['user']['name'],
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              timeago.format(
+                                                  DateTime.parse(
+                                                      comment['time']),
+                                                  locale: 'en_short'),
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Text(comment['content']),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: <Widget>[
+                                            IconTextButton(
+                                              iconData: Icons.thumb_up,
+                                              text: "",
+                                              onTap: () {},
+                                            ),
+                                            IconTextButton(
+                                              iconData: Icons.comment,
+                                              text: "",
+                                              onTap: () {},
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        })
                   ],
                 ),
               ),
             ),
           ),
-          Container(
-            color: Colors.grey.shade200,
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Add a Comment',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+          Padding(
+            padding: EdgeInsets.all(10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Add a Comment',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        commentContent = value;
+                      });
+                    },
+                  ),
                 ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  comment = value;
-                });
-              },
+                ElevatedButton(
+                  onPressed: () {
+                    addCommentToPost();
+
+                    setState(() {
+                      commentContent = '';
+                    });
+                  },
+                  child: Text("Send"),
+                ),
+              ],
             ),
-          ),
+          )
         ],
       ),
     );
@@ -140,5 +254,42 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
         }
       }).toList(),
     );
+  }
+
+  void addCommentToPost() async {
+    final _firestore = FirebaseFirestore.instance;
+    String collectionPath = 'discussions/';
+    String communityId = widget.community.name;
+    String discussionId = widget.discussion.headline;
+    User user = Provider.of<CurrentUser>(context, listen: false).currentUser;
+    String commentID = _firestore
+        .collection(collectionPath)
+        .doc(communityId)
+        .collection('posts')
+        .doc(discussionId)
+        .collection('comments')
+        .doc()
+        .id;
+
+    Comment comment = Comment(
+      id: commentID,
+      user: user,
+      content: commentContent,
+      time: DateTime.now(),
+    );
+
+    try {
+      await _firestore
+          .collection(collectionPath)
+          .doc(communityId)
+          .collection('posts')
+          .doc(discussionId)
+          .collection('comments')
+          .doc(commentID)
+          .set(comment.toMap());
+      print('Comment added successfully.');
+    } catch (e) {
+      print('Error adding comment: $e');
+    }
   }
 }

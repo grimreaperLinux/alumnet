@@ -256,7 +256,7 @@ class DiscussionPost extends StatelessWidget {
             children: [
               Icon(Icons.message),
               SizedBox(width: 4),
-              Text(discussion.activityCount.toString()),
+              // Text(discussion.comments.length.toString()),
             ],
           ),
           Divider(),
