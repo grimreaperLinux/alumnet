@@ -1,15 +1,17 @@
 import 'package:alumnet/models/community.dart';
 import 'package:alumnet/models/discussion.dart';
 import 'package:alumnet/models/user.dart';
+import 'package:alumnet/screens/community/components/discussion_post.dart';
 import 'package:alumnet/screens/community/createDiscussion_screen.dart';
 import 'package:alumnet/screens/community/discussion_detail_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
 
 class DiscussionScreen extends StatefulWidget {
   final Community community;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  var isMember = false;
 
   DiscussionScreen({required this.community});
 
@@ -18,10 +20,13 @@ class DiscussionScreen extends StatefulWidget {
 }
 
 class _DiscussionScreenState extends State<DiscussionScreen> {
-  List<Discussion> data = [];
+  List<Discussion> postsData = [];
+  List membersData = [];
+  bool isMember = false;
   @override
   void initState() {
     super.initState();
+    checkIfMember();
     _fetchData();
   }
 
@@ -33,10 +38,82 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
         .collection('posts')
         .get();
     setState(() {
-      data = querySnapshot.docs
+      postsData = querySnapshot.docs
           .map((doc) => Discussion.fromMap(doc.data()))
           .toList();
     });
+
+    // QuerySnapshot<Map<String, dynamic>> querySnapshot2 = await _firestore
+    //     .collection('discussions')
+    //     .doc(widget.community.name)
+    //     .collection('members')
+    //     .get();
+    // setState(() {
+    //   membersData = querySnapshot2.docs.map((doc) => doc.data()).toList();
+    // });
+  }
+
+  void manipulateMemberList() async {
+    final _firestore = FirebaseFirestore.instance;
+    final String currentUserID =
+        Provider.of<CurrentUser>(context, listen: false).currentUser.id;
+    final communityName = widget.community.name;
+
+    try {
+      if (!isMember) {
+        await _firestore
+            .collection('discussions')
+            .doc(communityName)
+            .collection('members')
+            .doc(currentUserID)
+            .set({'userId': currentUserID});
+
+        print('User added to the community');
+        setState(() {
+          isMember = true;
+        });
+      } else {
+        await _firestore
+            .collection('discussions')
+            .doc(communityName)
+            .collection('members')
+            .doc(currentUserID)
+            .delete();
+
+        print('User removed from the community');
+        setState(() {
+          isMember = false;
+        });
+      }
+    } catch (e) {
+      // Handle errors
+      print('Error manipulating member list: $e');
+    }
+  }
+
+  void checkIfMember() async {
+    print(isMember);
+    final _firestore = FirebaseFirestore.instance;
+    final User user =
+        Provider.of<CurrentUser>(context as BuildContext, listen: false)
+            .currentUser;
+    final String communityName = widget.community.name;
+    try {
+      final snapshot = await _firestore
+          .collection('discussions')
+          .doc(communityName)
+          .collection('members')
+          .where('userID', isEqualTo: user.id)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        isMember = true;
+      } else {
+        isMember = false;
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -54,8 +131,81 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
             ),
             Spacer(),
             IconButton(icon: Icon(Icons.search), onPressed: () {}),
-            IconButton(icon: Icon(Icons.open_in_browser), onPressed: () {}),
-            IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+            // IconButton(
+            //     icon: Icon(Icons.people),
+            //     onPressed: () {
+            //       Scaffold.of(context).openDrawer();
+            //     }),
+            // IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+          ],
+        ),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.people),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            ),
+          ),
+        ],
+      ),
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              child: Text(
+                'Community Members',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 35,
+                    fontWeight: FontWeight.w600),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            StreamBuilder(
+                stream:
+                    FirebaseFirestore.instance.collection('Users').snapshots(),
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  membersData = snapshot.data!.docs;
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: membersData.length,
+                    itemBuilder: (context, index) {
+                      final data = membersData[index];
+                      return ListTile(
+                        title: Text(data['fullName']),
+                        leading: CircleAvatar(
+                          child: Icon(Icons.person),
+                          radius: 25,
+                        ),
+                        onTap: () {},
+                      );
+                    },
+                  );
+                })
+            // ListTile(
+            //   title: Text("View Liked Posts"),
+            //   leading: Icon(Icons.favorite),
+            //   onTap: () {
+            //     // Handle liked posts tap
+            //   },
+            // ),
+            // ListTile(
+            //   title: Text("Merchandise"),
+            //   leading: Icon(Icons.shopping_bag),
+            //   onTap: () {
+            //     // Handle merchandise tap
+            //   },
+            // ),
           ],
         ),
       ),
@@ -87,7 +237,7 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                                 fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            "${widget.community.activeMembers} active members",
+                            "${membersData.length} active members",
                             style: TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],
@@ -95,24 +245,20 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                       Spacer(),
                       ElevatedButton(
                         onPressed: () {
-                          setState(() {
-                            widget.isMember = !widget.isMember;
-                          });
+                          manipulateMemberList();
                         },
                         child: Text(
-                          widget.isMember ? "Joined" : "Join",
+                          isMember ? "Joined" : "Join",
                           style: TextStyle(
-                              color: widget.isMember
-                                  ? Colors.black
-                                  : Colors.white),
+                              color: isMember ? Colors.black : Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           backgroundColor:
-                              widget.isMember ? null : Colors.black,
+                              isMember ? Colors.white : Colors.black,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
-                            side: widget.isMember
+                            side: isMember
                                 ? BorderSide(color: Colors.black)
                                 : BorderSide.none,
                           ),
@@ -180,87 +326,47 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
               ),
             ),
             SizedBox(height: 10),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DiscussionDetailScreen(
-                              discussion: data[index],
-                              community: widget.community),
-                        ),
-                      );
-                    },
-                    child: DiscussionPost(discussion: data[index]));
-                ;
+            StreamBuilder(
+              stream: FirebaseFirestore.instance
+                  .collection('discussions')
+                  .doc(widget.community.name)
+                  .collection('posts')
+                  .snapshots(),
+              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                List<Discussion> postsData = snapshot.data!.docs
+                    .map((doc) =>
+                        Discussion.fromMap(doc.data() as Map<String, dynamic>?))
+                    .toList();
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: postsData.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DiscussionDetailScreen(
+                              discussion: postsData[index],
+                              community: widget.community,
+                            ),
+                          ),
+                        );
+                      },
+                      child: DiscussionPost(discussion: postsData[index]),
+                    );
+                  },
+                );
               },
-            ),
+            )
           ],
         ),
-      ),
-    );
-  }
-}
-
-class DiscussionPost extends StatelessWidget {
-  final Discussion discussion;
-  DiscussionPost({required this.discussion});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: NetworkImage(discussion.postedBy.profilepic),
-                radius: 20,
-              ),
-              SizedBox(width: 8),
-              Text(
-                discussion.postedBy.name,
-                style: TextStyle(
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(width: 8),
-              Text(
-                "5h",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 10,
-                ),
-              ),
-              Spacer(),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(Icons.more_vert),
-              ),
-            ],
-          ),
-          Text(
-            discussion.headline,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          SizedBox(height: 8),
-          SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.message),
-              SizedBox(width: 4),
-              // Text(discussion.comments.length.toString()),
-            ],
-          ),
-          Divider(),
-        ],
       ),
     );
   }
