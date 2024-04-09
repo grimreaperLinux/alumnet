@@ -106,16 +106,15 @@ class _DiscussionPostState extends State<DiscussionPost> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DiscussionDetailScreen(
-                        discussion: widget.discussion,
-                        community: widget.community,
-                        currentLevel: 0,
-                      ),
-                    ),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => DiscussionDetailScreen(
+                  //       discussion: widget.discussion,
+                  //       community: widget.community,
+                  //     ),
+                  //   ),
+                  // );
                 },
                 child: Row(
                   children: [

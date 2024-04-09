@@ -11,11 +11,12 @@ import 'package:timeago/timeago.dart' as timeago;
 class DiscussionDetailScreen extends StatefulWidget {
   final Discussion discussion;
   final Community community;
-  final currentLevel;
-  DiscussionDetailScreen(
-      {required this.discussion,
-      required this.community,
-      required this.currentLevel});
+  final String path;
+  DiscussionDetailScreen({
+    required this.discussion,
+    required this.community,
+    required this.path,
+  });
 
   @override
   _DiscussionDetailViewState createState() => _DiscussionDetailViewState();
@@ -26,7 +27,6 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.currentLevel);
     return Scaffold(
       body: Column(
         children: [
@@ -111,11 +111,8 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
 
                     StreamBuilder(
                         stream: FirebaseFirestore.instance
-                            .collection('discussions')
-                            .doc(widget.community.name)
-                            .collection('posts')
-                            .doc(widget.discussion.headline)
-                            .collection('comments')
+                            .collection(widget.path)
+                            .where("parentId", isEqualTo: widget.discussion.id)
                             .snapshots(),
                         builder:
                             (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -163,11 +160,11 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                                                         postedAt:
                                                             DateTime.parse(
                                                                 postedAt),
-                                                        headline: headline),
+                                                        headline: headline,
+                                                        parentId: commentData[
+                                                            'parentId']),
                                                     community: widget.community,
-                                                    currentLevel:
-                                                        widget.currentLevel +
-                                                            1)));
+                                                    path: widget.path)));
                                   },
                                   child: Row(
                                     children: [
@@ -287,9 +284,9 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                                           padding: EdgeInsets.all(5),
                                           child: ElevatedButton(
                                             onPressed: () {
-                                              addCommentToPost(widget
-                                                  .currentLevel
-                                                  .toString());
+                                              addCommentToPost(
+                                                  widget.discussion.parentId ??
+                                                      "");
                                               Navigator.pop(context);
                                               setState(() {
                                                 commentContent = '';
@@ -347,38 +344,15 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
   void addCommentToPost(String parentId) async {
     final _firestore = FirebaseFirestore.instance;
 
-    String communityId = widget.community.name;
-    String discussionId = widget.discussion.id;
-    String collectionPath = 'discussions/';
+    String collectionPath = widget.path;
 
     User user = Provider.of<CurrentUser>(context, listen: false).currentUser;
-    String commentID = _firestore
-        .collection(collectionPath)
-        .doc(communityId)
-        .collection('posts')
-        .doc(discussionId)
-        .collection('comments')
-        .doc()
-        .id;
+    String commentID = _firestore.collection(collectionPath).doc().id;
 
-    if (parentId == '0' || parentId.isEmpty) {
-      parentId = '';
+    if (parentId == '' || parentId.isEmpty) {
+      parentId = widget.discussion.id;
     } else {
-      DocumentSnapshot parentSnapshot = await _firestore
-          .collection(collectionPath)
-          .doc(communityId)
-          .collection('posts')
-          .doc(discussionId)
-          .collection('comments')
-          .doc(parentId)
-          .get();
-
-      if (parentSnapshot.exists) {
-        parentId = parentSnapshot.id;
-      } else {
-        print('Parent comment not found.');
-        return;
-      }
+      parentId = widget.discussion.id;
     }
 
     Discussion comment = Discussion(
@@ -392,10 +366,6 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
     try {
       await _firestore
           .collection(collectionPath)
-          .doc(communityId)
-          .collection('posts')
-          .doc(discussionId)
-          .collection('comments')
           .doc(commentID)
           .set(comment.toMap());
       print('Comment added successfully.');

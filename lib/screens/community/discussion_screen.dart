@@ -315,10 +315,10 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => DiscussionDetailScreen(
-                              discussion: postsData[index],
-                              community: widget.community,
-                              currentLevel: 0,
-                            ),
+                                discussion: postsData[index],
+                                community: widget.community,
+                                path:
+                                    "discussions/${widget.community.name}/posts/${postsData[index].id}/comments"),
                           ),
                         );
                       },
