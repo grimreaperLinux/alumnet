@@ -3,6 +3,7 @@ import 'package:alumnet/constants/image_strings.dart';
 import 'package:alumnet/constants/text_strings.dart';
 import 'package:alumnet/features/auth/models/model_on_boarding.dart';
 import 'package:alumnet/features/auth/screens/on_boarding/onboarding_page.dart';
+import 'package:alumnet/features/auth/screens/welcome/welcome.dart';
 import 'package:get/get.dart';
 import 'package:liquid_swipe/PageHelpers/LiquidController.dart';
 
@@ -41,6 +42,7 @@ class OnBoardingController extends GetxController {
 
   void onPageChangeCallback(int page) {
     currentPage.value = page;
+    print(page);
   }
 
   skip() => controller.jumpToPage(page: 2);
@@ -48,5 +50,8 @@ class OnBoardingController extends GetxController {
   animateToNextSlide() {
     int nextPage = controller.currentPage + 1;
     controller.animateToPage(page: nextPage);
+    if (nextPage == 3) {
+      Get.to(WelcomeScreen());
+    }
   }
 }

@@ -93,9 +93,10 @@ flutter:
     - assets/rive_app/icons.riv
     - assets/logo.jpg
     - assets/images/1.jpeg
-    - assets/images/2.jpeg
+    - assets/images/2.png
     - assets/images/3.jpeg
     - assets/images/4.jpeg
+    - assets/images/6.jpeg
     - assets/images/cgc.jpeg
     # - assets/Images/
   #   - images/a_dot_ham.jpeg
