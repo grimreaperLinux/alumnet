@@ -68,7 +68,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       body: Column(
         children: [

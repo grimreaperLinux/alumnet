@@ -71,7 +71,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       body: Column(
         children: [
@@ -95,7 +95,7 @@ class _MessagesPageState extends State<MessagesPage> {
           !isFocus
               ? Expanded(
                   child: StreamBuilder(
-                    stream: FirebaseFirestore.instance.collection('chat').where('Users', arrayContains: currentUser.id).snapshots(),
+                    stream: FirebaseFirestore.instance.collection('chat').where('users', arrayContains: currentUser.id).snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();
@@ -114,19 +114,24 @@ class _MessagesPageState extends State<MessagesPage> {
                             (element) => element == currentUser.id,
                           );
                           final otherUserId = users[0];
-                          print(otherUserId);
+                          var _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              try{
+                                _profilePic = listItem[otherUserId]['profilepic'];
+                              }catch(e){
+                                _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              }
 
                           return FrequentChatItem(
                             chatId: listItem.id,
                             chattingWithUser: User(
                                 id: listItem.id,
                                 username: listItem[otherUserId]['username'],
-                                batch: listItem[otherUserId]['batch'],
-                                branch: listItem[otherUserId]['branch'],
-                                about: listItem[otherUserId]['about'],
+                                batch: '',
+                                branch: '',
+                                about: '',
                                 name: listItem[otherUserId]['name'],
-                                profilepic: listItem[otherUserId]['profilepic'],
-                                email: '' // to be filled by chirag
+                                profilepic: _profilePic,
+                                email: ''
                                 ),
                             lastMessageTime: listItem['lastMessageTime'].toDate(),
                             lastChatMessage: listItem['lastMessage'],
@@ -142,8 +147,8 @@ class _MessagesPageState extends State<MessagesPage> {
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('Users')
-                            .where('name', isGreaterThanOrEqualTo: searchQueryText)
-                            .where('name', isLessThan: searchQueryText + 'z')
+                            .where('fullName', isGreaterThanOrEqualTo: searchQueryText)
+                            .where('fullName', isLessThan: searchQueryText + 'z')
                             .snapshots(),
                         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -157,17 +162,24 @@ class _MessagesPageState extends State<MessagesPage> {
                             itemCount: snapshot.data!.docs.length,
                             itemBuilder: (context, index) {
                               final listItem = snapshot.data!.docs[index];
+                              var _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              try{
+                                _profilePic = listItem['profilepic'];
+                              }catch(e){
+                                _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              }
+
                               return FrequentChatItem(
                                 chatId: '',
                                 chattingWithUser: User(
                                     id: listItem.id,
-                                    username: listItem['username'],
-                                    batch: listItem['batch'],
-                                    branch: listItem['branch'],
-                                    about: listItem['about'],
-                                    name: listItem['name'],
-                                    profilepic: listItem['profilepic'],
-                                    email: '' // to be filled by chirag
+                                    username: listItem['instituteId'],
+                                    batch: '',
+                                    branch: '',
+                                    about: '',
+                                    name: listItem['fullName'],
+                                    profilepic: _profilePic,
+                                    email: ''
                                     ),
                                 lastMessageTime: DateTime.now(),
                                 lastChatMessage: '',

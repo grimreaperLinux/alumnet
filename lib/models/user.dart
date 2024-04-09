@@ -50,9 +50,25 @@ class CurrentUser extends ChangeNotifier {
       instituteId: userData['instituteId'],
       profilepic: userData.containsKey('profilepic')?userData['profilepic']:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
       about: userData.containsKey('about')?userData['about']:'',
-      batch: userData.containsKey('batch')?userData['batch']:''
+      batch: userData.containsKey('batch')?userData['batch']:'',
+      branch: userData.containsKey('branch')?userData['branch']:''
     ));
+  }
 
-    print(currentUser.instituteId);
+  void updateUserData(about,profilepic,batch,branch){
+    if(about!=''){
+      currentUser.about=about;
+    }
+    if(profilepic!=''){
+      currentUser.profilepic = profilepic;
+    }
+    if(batch!=''){
+      currentUser.batch = batch;
+    }
+    if(branch!=''){
+      currentUser.branch = branch;
+    }
+
+    notifyListeners();
   }
 }
