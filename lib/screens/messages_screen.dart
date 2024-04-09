@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
 
 class MessagesPage extends StatefulWidget {
   @override
@@ -16,18 +17,6 @@ class _MessagesPageState extends State<MessagesPage> {
   FocusNode _focusNode = FocusNode();
   var isFocus = false;
   var searchQueryText = "";
-
-  User currentUser = User(
-    id: '8BICx4WqZatmhFNsgmDZ',
-    batch: '2024',
-    username: "20bds016",
-    name: "Chirag",
-    about: "Hello User",
-    profilepic:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-    branch: 'DSAI',
-    email: "chirag@gmail.com",
-  );
 
   final List<Map<String, dynamic>> users = [
     {
@@ -82,6 +71,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       body: Column(
         children: [
@@ -124,19 +114,24 @@ class _MessagesPageState extends State<MessagesPage> {
                             (element) => element == currentUser.id,
                           );
                           final otherUserId = users[0];
-                          print(otherUserId);
+                          var _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              try{
+                                _profilePic = listItem[otherUserId]['profilepic'];
+                              }catch(e){
+                                _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              }
 
                           return FrequentChatItem(
                             chatId: listItem.id,
                             chattingWithUser: User(
                                 id: listItem.id,
                                 username: listItem[otherUserId]['username'],
-                                batch: listItem[otherUserId]['batch'],
-                                branch: listItem[otherUserId]['branch'],
-                                about: listItem[otherUserId]['about'],
+                                batch: '',
+                                branch: '',
+                                about: '',
                                 name: listItem[otherUserId]['name'],
-                                profilepic: listItem[otherUserId]['profilepic'],
-                                email: '' // to be filled by chirag
+                                profilepic: _profilePic,
+                                email: ''
                                 ),
                             lastMessageTime: listItem['lastMessageTime'].toDate(),
                             lastChatMessage: listItem['lastMessage'],
@@ -151,9 +146,9 @@ class _MessagesPageState extends State<MessagesPage> {
                   ? Expanded(
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .where('name', isGreaterThanOrEqualTo: searchQueryText)
-                            .where('name', isLessThan: searchQueryText + 'z')
+                            .collection('Users')
+                            .where('fullName', isGreaterThanOrEqualTo: searchQueryText)
+                            .where('fullName', isLessThan: searchQueryText + 'z')
                             .snapshots(),
                         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -167,17 +162,24 @@ class _MessagesPageState extends State<MessagesPage> {
                             itemCount: snapshot.data!.docs.length,
                             itemBuilder: (context, index) {
                               final listItem = snapshot.data!.docs[index];
+                              var _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              try{
+                                _profilePic = listItem['profilepic'];
+                              }catch(e){
+                                _profilePic = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              }
+
                               return FrequentChatItem(
                                 chatId: '',
                                 chattingWithUser: User(
                                     id: listItem.id,
-                                    username: listItem['username'],
-                                    batch: listItem['batch'],
-                                    branch: listItem['branch'],
-                                    about: listItem['about'],
-                                    name: listItem['name'],
-                                    profilepic: listItem['profilepic'],
-                                    email: '' // to be filled by chirag
+                                    username: listItem['instituteId'],
+                                    batch: '',
+                                    branch: '',
+                                    about: '',
+                                    name: listItem['fullName'],
+                                    profilepic: _profilePic,
+                                    email: ''
                                     ),
                                 lastMessageTime: DateTime.now(),
                                 lastChatMessage: '',

@@ -22,17 +22,17 @@ class AlumnetHome extends StatefulWidget {
 }
 
 class _AlumnetHomeState extends State<AlumnetHome> {
-  User currentUser = User(
-    id: '8BICx4WqZatmhFNsgmDZ',
-    batch: '2024',
-    username: "20bds016",
-    name: "Chirag",
-    about: "Hello User",
-    profilepic:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-    branch: 'DSAI',
-    email: "chirag@gmail.com",
-  );
+  // User currentUser = User(
+  //   id: '8BICx4WqZatmhFNsgmDZ',
+  //   batch: '2024',
+  //   username: "20bds016",
+  //   name: "Chirag",
+  //   about: "Hello User",
+  //   profilepic:
+  //       'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
+  //   branch: 'DSAI',
+  //   email: "chirag@gmail.com",
+  // );
 
   final List _pages = [HomePage(), SearchPage(), CommunityPage(), NotificationsPage(), MessagesPage(), Profile()];
   @override
@@ -69,6 +69,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
 
   @override
   Widget build(BuildContext context) {
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       body: Column(
         children: [
