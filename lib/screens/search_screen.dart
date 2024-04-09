@@ -102,15 +102,12 @@ class _SearchPageState extends State<SearchPage> {
             SizedBox(height: 20),
             Expanded(
               child: _isSearching
-                  ? BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                      child: Container(
-                        color: Colors.black.withOpacity(0.5),
-                        alignment: Alignment.center,
-                        child: LoadingAnimationWidget.inkDrop(
-                          color: Colors.white,
-                          size: 50,
-                        ),
+                  ? Container(
+                      color: Colors.black.withOpacity(0.5),
+                      alignment: Alignment.center,
+                      child: LoadingAnimationWidget.inkDrop(
+                        color: Colors.white,
+                        size: 50,
                       ),
                     )
                   : _searchResults.values.every((list) => list.isEmpty)

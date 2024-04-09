@@ -71,6 +71,81 @@ class _AlumnetHomeState extends State<AlumnetHome> {
   Widget build(BuildContext context) {
     User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.person,
+                    size: 50,
+                    color: Colors.white,
+                  ),
+                  Text(
+                    currentUser.name,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    currentUser.instituteId,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              title: Text("Profile"),
+              leading: Icon(Icons.person),
+              onTap: () {
+                onTabPress(5);
+              },
+            ),
+            ListTile(
+              title: Text("View Liked Posts"),
+              leading: Icon(Icons.favorite),
+              onTap: () {
+                // Handle liked posts tap
+              },
+            ),
+            ListTile(
+              title: Text("Create a Community"),
+              leading: Icon(Icons.add),
+              onTap: () {
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => CreateCommunityScreen()));
+              },
+            ),
+            ListTile(
+              title: Text("View Saved Posts"),
+              leading: Icon(Icons.save_rounded),
+              onTap: () {
+                // Handle merchandise tap
+              },
+            ),
+            ListTile(
+              title: Text("Logout"),
+              leading: Icon(Icons.logout),
+              onTap: () {
+                AuthRepo.instance.logout();
+              },
+            ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
           Padding(
@@ -79,15 +154,17 @@ class _AlumnetHomeState extends State<AlumnetHome> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  child: GestureDetector(
-                    child: CircleAvatar(
-                      radius: 25,
-                      backgroundImage: NetworkImage(currentUser.profilepic),
-                    ),
-                    onTap: () {
-                      onTabPress(5);
-                    },
-                  ),
+                  child: Builder(builder: (context) {
+                    return GestureDetector(
+                      child: CircleAvatar(
+                        radius: 25,
+                        backgroundImage: NetworkImage(currentUser.profilepic),
+                      ),
+                      onTap: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    );
+                  }),
                 ),
                 if (_index == 0)
                   IconButton(
@@ -96,12 +173,6 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                       Provider.of<PostList>(context, listen: false).refreshPosts();
                     },
                   ),
-                IconButton(
-                  icon: const Icon(Icons.logout_outlined),
-                  onPressed: () {
-                    AuthRepo.instance.logout();
-                  },
-                ),
               ],
             ),
           ),

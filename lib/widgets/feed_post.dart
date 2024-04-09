@@ -140,31 +140,13 @@ class SocialCard extends StatelessWidget {
                 Expanded(
                   flex: 2, // 70% of the space
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        IconTextButton(
-                          iconData: isPostLiked ? CustomIcons.thumbs_up_alt : CustomIcons.thumbsup,
-                          text: post.likes.length.toString(),
-                          onTap: () {
-                            Provider.of<PostList>(context, listen: false).toggleLikePost(currentUser.id, post.id, !isPostLiked);
-                          },
-                        ),
-                        IconTextButton(
-                          iconData: Icons.comment,
-                          text: post.comments.length.toString(),
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (BuildContext context) {
-                                return CommentsModal();
-                              },
-                            );
-                          },
-                        ),
-                      ],
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 10.0),
+                    child: IconTextButton(
+                      iconData: isPostLiked ? CustomIcons.thumbs_up_alt : CustomIcons.thumbsup,
+                      text: post.likes.length.toString(),
+                      onTap: () {
+                        Provider.of<PostList>(context, listen: false).toggleLikePost(currentUser.id, post.id, !isPostLiked);
+                      },
                     ),
                   ),
                 ),
