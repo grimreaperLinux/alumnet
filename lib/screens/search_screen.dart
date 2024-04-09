@@ -1,3 +1,4 @@
+import 'package:alumnet/profile/otheruser_profile.dart';
 import 'package:flutter/material.dart';
 import '../services/typesense_search.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
@@ -203,8 +204,13 @@ class SearchResultBox extends StatelessWidget {
                   title: Text(document['fullName'] ?? document['name'] ?? document['headline'] ?? 'No title',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () {
-                    // Handle tap, for example navigate to a detail page
-                    // Aman and Chirag Have fun here
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => OtherProfile(
+                          userId: document['id'],
+                        ),
+                      ),
+                    );
                     print(document['id']);
                   },
                 );

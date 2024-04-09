@@ -34,7 +34,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
   //   email: "chirag@gmail.com",
   // );
 
-  final List _pages = [HomePage(), SearchPage(), CommunityPage(), NotificationsPage(), MessagesPage(), Profile()];
+  final List _pages = [HomePage(), SearchPage(), CommunityPage(), MessagesPage(), Profile()];
   @override
   void initState() {
     super.initState();
@@ -58,7 +58,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
         _selectedTab = index;
       });
       changeScreen(index);
-      if (index <= 4) {
+      if (index <= 3) {
         _icons[index].status!.change(true);
         Future.delayed(const Duration(seconds: 1), () {
           _icons[index].status!.change(false);
@@ -85,7 +85,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                       backgroundImage: NetworkImage(currentUser.profilepic),
                     ),
                     onTap: () {
-                      onTabPress(5);
+                      onTabPress(4);
                     },
                   ),
                 ),
