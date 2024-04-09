@@ -35,6 +35,13 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
   List<File?> documents = [];
   List<String> documentNames = [];
   bool isLoading = false;
+  late User currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    currentUser = Provider.of<CurrentUser>(context, listen: false).currentUser;
+  }
 
   @override
   void dispose() {
@@ -183,9 +190,8 @@ class _PostCreationScreenState extends State<PostCreationScreen> {
       return;
     }
 
-    User user = User.fromDummyData();
     PostItem post = PostItem(
-        userId: user.id,
+        userId: currentUser.id,
         timeOfCreation: DateTime.now().toUtc(),
         text: postContent);
 

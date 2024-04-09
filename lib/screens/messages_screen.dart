@@ -71,7 +71,8 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser =
+        Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       body: Column(
         children: [
@@ -95,7 +96,10 @@ class _MessagesPageState extends State<MessagesPage> {
           !isFocus
               ? Expanded(
                   child: StreamBuilder(
-                    stream: FirebaseFirestore.instance.collection('chat').where('Users', arrayContains: currentUser.id).snapshots(),
+                    stream: FirebaseFirestore.instance
+                        .collection('chat')
+                        .where('users', arrayContains: currentUser.id)
+                        .snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return CircularProgressIndicator();
@@ -108,27 +112,36 @@ class _MessagesPageState extends State<MessagesPage> {
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
                           final listItem = snapshot.data!.docs[index];
-                          List<dynamic> users = snapshot.data!.docs[index]['users'];
+                          List<dynamic> users =
+                              snapshot.data!.docs[index]['users'];
 
                           users.removeWhere(
                             (element) => element == currentUser.id,
                           );
                           final otherUserId = users[0];
-                          print(otherUserId);
+                          var _profilePic =
+                              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                          try {
+                            _profilePic = listItem[otherUserId]['profilepic'];
+                          } catch (e) {
+                            _profilePic =
+                                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                          }
 
                           return FrequentChatItem(
                             chatId: listItem.id,
                             chattingWithUser: User(
                                 id: listItem.id,
                                 username: listItem[otherUserId]['username'],
-                                batch: listItem[otherUserId]['batch'],
-                                branch: listItem[otherUserId]['branch'],
-                                about: listItem[otherUserId]['about'],
+                                batch: '',
+                                branch: '',
+                                about: '',
                                 name: listItem[otherUserId]['name'],
-                                profilepic: listItem[otherUserId]['profilepic'],
-                                email: '' // to be filled by chirag
-                                ),
-                            lastMessageTime: listItem['lastMessageTime'].toDate(),
+                                profilepic: _profilePic,
+                                email: '',
+                                instituteId: listItem[otherUserId]['username']),
+                            lastMessageTime:
+                                listItem['lastMessageTime'].toDate(),
                             lastChatMessage: listItem['lastMessage'],
                             currentUser: currentUser,
                           );
@@ -142,14 +155,19 @@ class _MessagesPageState extends State<MessagesPage> {
                       child: StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection('Users')
-                            .where('name', isGreaterThanOrEqualTo: searchQueryText)
-                            .where('name', isLessThan: searchQueryText + 'z')
+                            .where('fullName',
+                                isGreaterThanOrEqualTo: searchQueryText)
+                            .where('fullName',
+                                isLessThan: searchQueryText + 'z')
                             .snapshots(),
-                        builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                        builder:
+                            (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
                             return CircularProgressIndicator();
                           }
-                          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
                             return Text('No matching documents found.');
                           }
 
@@ -157,18 +175,28 @@ class _MessagesPageState extends State<MessagesPage> {
                             itemCount: snapshot.data!.docs.length,
                             itemBuilder: (context, index) {
                               final listItem = snapshot.data!.docs[index];
+                              var _profilePic =
+                                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              try {
+                                _profilePic = listItem['profilepic'];
+                              } catch (e) {
+                                _profilePic =
+                                    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s';
+                              }
+
                               return FrequentChatItem(
                                 chatId: '',
                                 chattingWithUser: User(
-                                    id: listItem.id,
-                                    username: listItem['username'],
-                                    batch: listItem['batch'],
-                                    branch: listItem['branch'],
-                                    about: listItem['about'],
-                                    name: listItem['name'],
-                                    profilepic: listItem['profilepic'],
-                                    email: '' // to be filled by chirag
-                                    ),
+                                  id: listItem.id,
+                                  username: listItem['instituteId'],
+                                  batch: '',
+                                  branch: '',
+                                  about: '',
+                                  name: listItem['fullName'],
+                                  profilepic: _profilePic,
+                                  email: '',
+                                  instituteId: listItem['instituteId'],
+                                ),
                                 lastMessageTime: DateTime.now(),
                                 lastChatMessage: '',
                                 currentUser: currentUser,
@@ -202,12 +230,14 @@ class FrequentChatItem extends StatelessWidget {
   }) : super(key: key);
 
   Future<String> _createOrRetrieveChat() async {
-    QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('chat').where('users', isEqualTo: [currentUser.id, chattingWithUser.id]).get();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('chat')
+        .where('users', isEqualTo: [currentUser.id, chattingWithUser.id]).get();
     List<QueryDocumentSnapshot> documents = querySnapshot.docs;
 
     if (documents.isEmpty) {
-      final createdObject = await FirebaseFirestore.instance.collection('chat').add({
+      final createdObject =
+          await FirebaseFirestore.instance.collection('chat').add({
         "users": [currentUser.id, chattingWithUser.id],
         "${chattingWithUser.id}": {
           "name": chattingWithUser.name,
@@ -219,7 +249,7 @@ class FrequentChatItem extends StatelessWidget {
         },
         "${currentUser.id}": {
           "name": currentUser.name,
-          "username": currentUser.username,
+          "username": currentUser.instituteId,
           "profilepic": currentUser.profilepic,
           "batch": currentUser.batch,
           "branch": currentUser.branch,
@@ -238,14 +268,18 @@ class FrequentChatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(chattingWithUser.username);
     return GestureDetector(
       onTap: () async {
         var chatIdToPass = chatId;
         if (chatIdToPass == '') {
           chatIdToPass = await _createOrRetrieveChat();
         }
-        Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => ChatScreen(currentUser: currentUser, chattingWithUser: chattingWithUser, chatId: chatIdToPass)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ChatScreen(
+                currentUser: currentUser,
+                chattingWithUser: chattingWithUser,
+                chatId: chatIdToPass)));
       },
       child: Container(
         padding: EdgeInsets.all(16.0),
@@ -286,9 +320,9 @@ class FrequentChatItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Expanded(
+                      chatId.isEmpty? Spacer():Expanded(
                         flex: 1,
-                        child: Text(
+                        child:Text(
                           ' • ${_getTimeAgo(lastMessageTime)} ago',
                           style: TextStyle(fontWeight: FontWeight.bold),
                           overflow: TextOverflow.ellipsis,

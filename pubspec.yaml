@@ -58,6 +58,8 @@ dependencies:
   get: ^4.6.5
   liquid_swipe: ^3.0.0
   smooth_page_indicator: ^1.0.0+2
+  typesense: ^0.5.1
+  anim_search_bar: ^2.0.3
 
 dev_dependencies:
   flutter_test:
@@ -92,7 +94,7 @@ flutter:
     - assets/images/2.jpeg
     - assets/images/3.jpeg
     - assets/images/4.jpeg
-    - assets/images/5.jpeg
+    - assets/images/cgc.jpeg
     # - assets/Images/
   #   - images/a_dot_ham.jpeg
 

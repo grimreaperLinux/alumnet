@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class User {
   final String id;
@@ -11,6 +12,7 @@ class User {
   String branch;
   final String email;
   String instituteId;
+  List<String> savedPosts = [];
 
   User({
     required this.name,
@@ -66,36 +68,84 @@ class User {
       'instituteId': instituteId,
     };
   }
+
+  factory User.fromFirestore(Map<String, dynamic> data, String documentId) {
+    User user = User(
+      id: documentId,
+      name: data['fullName'] ?? '',
+      email: data['email'] ?? '',
+      profilepic: data['profilepic'] ?? '',
+    );
+
+    user.savedPosts = List<String>.from(data['savedPosts'] ?? []);
+    return user;
+  }
 }
 
 class CurrentUser extends ChangeNotifier {
-  late User _currentUser;
+  final List<User> _currentUser = [];
 
-  User get currentUser => _currentUser;
+  User get currentUser => _currentUser[0];
+  FirebaseFirestore db = FirebaseFirestore.instance;
 
   void setCurrentUser(Map<String, dynamic> userData) {
-    _currentUser = User(
-      name: userData['fullName'] ?? '',
-      id: userData['id'] ?? '',
-      email: userData['email'] ?? '',
-      instituteId: userData['instituteId'] ?? '',
-      profilepic: userData['profilepic'] ??
-          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
-      about: userData['about'] ?? '',
-      batch: userData['batch'] ?? '',
+    User user = User(
+      name: userData['fullName'],
+      id: userData['id'],
+      email: userData['email'],
+      instituteId: userData['instituteId'],
+      profilepic: userData.containsKey('profilepic')
+          ? userData['profilepic']
+          : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
+      about: userData.containsKey('about') ? userData['about'] : '',
+      batch: userData.containsKey('batch') ? userData['batch'] : '',
+      branch: userData.containsKey('branch') ? userData['branch'] : '',
     );
 
-    print(currentUser.instituteId);
-    notifyListeners();
+    user.savedPosts = List<String>.from(userData['savedPosts'] ?? []);
+    _currentUser.add(user);
+
+    print(currentUser.savedPosts);
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'name': _currentUser.name,
-      'profilepic': _currentUser.profilepic,
-      'username': _currentUser.username,
-      'batch': _currentUser.batch,
-      'about': _currentUser.about,
-    };
+  Future<void> toggleSavePost(String postId, bool isSaved) async {
+    try {
+      DocumentReference userRef = db.collection('Users').doc(currentUser.id);
+      if (isSaved) {
+        await userRef.update({
+          'savedPosts': FieldValue.arrayUnion([postId]),
+        });
+      } else {
+        await userRef.update({
+          'savedPosts': FieldValue.arrayRemove([postId]),
+        });
+      }
+
+      if (isSaved) {
+        _currentUser[0].savedPosts.add(postId);
+      } else {
+        _currentUser[0].savedPosts.remove(postId);
+      }
+      notifyListeners();
+    } catch (e) {
+      print("Error toggling like for post: $e");
+    }
+  }
+
+  void updateUserData(about, profilepic, batch, branch) {
+    if (about != '') {
+      currentUser.about = about;
+    }
+    if (profilepic != '') {
+      currentUser.profilepic = profilepic;
+    }
+    if (batch != '') {
+      currentUser.batch = batch;
+    }
+    if (branch != '') {
+      currentUser.branch = branch;
+    }
+
+    notifyListeners();
   }
 }

@@ -1,4 +1,5 @@
 import 'package:alumnet/models/feed_post.dart';
+import 'package:alumnet/models/user.dart';
 import 'package:alumnet/screens/home/create_post_screen.dart';
 import 'package:alumnet/widgets/feed_post.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     List<PostItem> postlist = Provider.of<PostList>(context).postList;
-    List<Widget> postWidgets = postlist.map((post) => SocialCard(post: post)).toList();
+    Map<String, User> userMap = Provider.of<PostList>(context).userMap;
+    List<Widget> postWidgets = postlist.map<Widget>((post) {
+      var user = userMap[post.userId];
+      return SocialCard(post: post, user: user as User);
+    }).toList();
     return Scaffold(
       body: Column(
         children: [

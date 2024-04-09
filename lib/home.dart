@@ -1,3 +1,4 @@
+import 'package:alumnet/models/feed_post.dart';
 import 'package:alumnet/models/tab_item.dart';
 import 'package:alumnet/models/user.dart';
 import 'package:alumnet/navigation/custom_tab_bar.dart';
@@ -77,7 +78,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -187,6 +188,13 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                     ),
                   ),
                 ),
+                if (_index == 0)
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded),
+                    onPressed: () {
+                      Provider.of<PostList>(context, listen: false).refreshPosts();
+                    },
+                  ),
                 IconButton(
                   icon: const Icon(Icons.verified_user),
                   onPressed: () {

@@ -34,7 +34,7 @@ class _ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     print(currentUser);
     return Container(
       width: double.infinity,
@@ -198,7 +198,7 @@ class ExperienceSection extends StatefulWidget {
 class _ExperienceSectionState extends State<ExperienceSection> {
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[300], // Light shade of grey
@@ -253,8 +253,7 @@ class _ExperienceSectionState extends State<ExperienceSection> {
                 return CircularProgressIndicator();
               }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return Text(
-                    'No Experiences, click on the + button to start adding');
+                return Text('Nothing Here');
               }
 
               return ListView.builder(
@@ -296,16 +295,18 @@ class _ExperienceSectionState extends State<ExperienceSection> {
                                 context: context,
                                 builder: (BuildContext context) {
                                   return ExperienceForm(
-                                      description:
-                                          currentListItem['desscription'],
-                                      fromDate: currentListItem['from_date'],
-                                      toDate: currentListItem['to_date'],
-                                      isNew: false,
-                                      experienceId: currentListItem.id,
-                                      isCurrent: currentListItem['current_org'],
-                                      organization:
-                                          currentListItem['organization_name'],
-                                      isExperience: true,position: currentListItem['position'],);
+                                    description:
+                                        currentListItem['desscription'],
+                                    fromDate: currentListItem['from_date'],
+                                    toDate: currentListItem['to_date'],
+                                    isNew: false,
+                                    experienceId: currentListItem.id,
+                                    isCurrent: currentListItem['current_org'],
+                                    organization:
+                                        currentListItem['organization_name'],
+                                    isExperience: true,
+                                    position: currentListItem['position'],
+                                  );
                                 },
                               );
                             },
@@ -397,10 +398,11 @@ class _ExperienceFormState extends State<ExperienceForm> {
       'position': _positionController.text
     };
 
-    final collectionName = widget.isExperience?'experience':'education';
+    final collectionName = widget.isExperience ? 'experience' : 'education';
 
     if (requestType == 'delete') {
-      if (widget.experienceId == 'new_experience' || widget.experienceId=='new') {
+      if (widget.experienceId == 'new_experience' ||
+          widget.experienceId == 'new') {
         setState(() {
           _errorController.text = 'Something went wrong, please retry again';
         });
@@ -444,7 +446,7 @@ class _ExperienceFormState extends State<ExperienceForm> {
       _toDateController.text = widget.toDate;
       _descriptionController.text = widget.description;
       _organizationController.text = widget.organization;
-      _positionController.text=widget.position;
+      _positionController.text = widget.position;
       setState(() {
         _isCurrent = widget.isCurrent;
       });
@@ -464,7 +466,7 @@ class _ExperienceFormState extends State<ExperienceForm> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
@@ -776,7 +778,7 @@ class _ExperienceFormState extends State<ExperienceForm> {
 class EducationSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey[300], // Light shade of grey
@@ -830,8 +832,7 @@ class EducationSection extends StatelessWidget {
                 return CircularProgressIndicator();
               }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return Text(
-                    'No Experiences, click on the + button to start adding');
+                return Text('Nothing here');
               }
 
               return ListView.builder(
@@ -873,16 +874,18 @@ class EducationSection extends StatelessWidget {
                                 context: context,
                                 builder: (BuildContext context) {
                                   return ExperienceForm(
-                                      description:
-                                          currentListItem['desscription'],
-                                      fromDate: currentListItem['from_date'],
-                                      toDate: currentListItem['to_date'],
-                                      isNew: false,
-                                      experienceId: currentListItem.id,
-                                      isCurrent: currentListItem['current_org'],
-                                      organization:
-                                          currentListItem['organization_name'],
-                                      isExperience: false,position: currentListItem['position'],);
+                                    description:
+                                        currentListItem['desscription'],
+                                    fromDate: currentListItem['from_date'],
+                                    toDate: currentListItem['to_date'],
+                                    isNew: false,
+                                    experienceId: currentListItem.id,
+                                    isCurrent: currentListItem['current_org'],
+                                    organization:
+                                        currentListItem['organization_name'],
+                                    isExperience: false,
+                                    position: currentListItem['position'],
+                                  );
                                 },
                               );
                             },
@@ -911,6 +914,14 @@ class EditProfileModal extends StatefulWidget {
 
 class _EditProfileModalState extends State<EditProfileModal> {
   TextEditingController _aboutController = TextEditingController();
+  TextEditingController _batchController = TextEditingController();
+  TextEditingController _branchController = TextEditingController();
+
+  List<int> _years = List.generate(20, (index) => DateTime.now().year - index);
+  List<int> _yearsFuture =
+      List.generate(4, (index) => DateTime.now().year + index);
+  List<int> combinedList = [];
+
   String _currentProfilePic =
       'https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=612x612&w=0&k=20&c=s0aTdmT5aU6b8ot7VKm11DeID6NctRCpB755rA1BIP0=';
   var _isUploadingFile = false;
@@ -919,6 +930,12 @@ class _EditProfileModalState extends State<EditProfileModal> {
     // TODO: implement initState
     super.initState();
     _aboutController = TextEditingController(text: widget.currentUser.about);
+    _batchController.text = widget.currentUser.batch;
+    _branchController.text = widget.currentUser.branch;
+
+    print(widget.currentUser.branch);
+    print(widget.currentUser.batch);
+    combinedList = _years + _yearsFuture;
     setState(() {
       _currentProfilePic = widget.currentUser.profilepic;
     });
@@ -938,8 +955,14 @@ class _EditProfileModalState extends State<EditProfileModal> {
     FirebaseFirestore.instance
         .collection('Users')
         .doc(widget.currentUser.id)
-        .update(
-            {'about': _aboutController.text, 'profilepic': _currentProfilePic});
+        .update({
+      'about': _aboutController.text,
+      'profilepic': _currentProfilePic,
+      'batch': _batchController.text,
+      'branch': _branchController.text
+    });
+
+    Provider.of<CurrentUser>(context, listen: false).updateUserData(_aboutController.text,_currentProfilePic,_batchController.text,_branchController.text);
   }
 
   Future<File?> _getImageFromSource(
@@ -1050,6 +1073,33 @@ class _EditProfileModalState extends State<EditProfileModal> {
                   filled: true,
                   fillColor: Colors.grey[200],
                   hintText: 'About Me',
+                  contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0), // Curved corners
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              TextField(
+                controller: _batchController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  hintText: 'Batch',
+                  contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30.0), // Curved corners
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              TextField(
+                controller: _branchController,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  hintText: 'Branch',
                   contentPadding: EdgeInsets.symmetric(horizontal: 10),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.0), // Curved corners

@@ -1,5 +1,6 @@
 import 'package:alumnet/icons/custom_icons.dart';
 import 'package:alumnet/models/feed_post.dart';
+import 'package:alumnet/screens/post_comments.dart';
 import 'package:alumnet/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -15,10 +16,13 @@ import 'dart:io';
 
 class SocialCard extends StatelessWidget {
   final PostItem post;
-  const SocialCard({required this.post, super.key});
+  final User user;
+  const SocialCard({required this.post, super.key, required this.user});
   @override
   Widget build(BuildContext context) {
-    User user = Provider.of<CurrentUser>(context).currentUser;
+    User currentUser = Provider.of<CurrentUser>(context).currentUser;
+    bool isPostLiked = post.likes.any((like) => like == currentUser.id);
+    bool isPostSaved = currentUser.savedPosts.any((element) => element == post.id);
     return Padding(
       padding: const EdgeInsets.all(6.0),
       child: Card(
@@ -36,7 +40,16 @@ class SocialCard extends StatelessWidget {
               ),
               title: Text(user.name),
               subtitle: buildTimeAgoText(post.timeOfCreation),
-              trailing: Icon(Icons.more_horiz),
+              trailing: currentUser.id == post.userId
+                  ? IconButton(
+                      onPressed: () {
+                        if (currentUser.id != post.userId) {
+                          return;
+                        }
+                        Provider.of<PostList>(context, listen: false).deletePost(post.id);
+                      },
+                      icon: const Icon(Icons.delete))
+                  : const SizedBox(),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -125,26 +138,31 @@ class SocialCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               children: [
                 Expanded(
-                  flex: 7, // 70% of the space
+                  flex: 2, // 70% of the space
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         IconTextButton(
-                          iconData: CustomIcons.thumbsup,
+                          iconData: isPostLiked ? CustomIcons.thumbs_up_alt : CustomIcons.thumbsup,
                           text: post.likes.length.toString(),
-                          onTap: () {},
+                          onTap: () {
+                            Provider.of<PostList>(context, listen: false).toggleLikePost(currentUser.id, post.id, !isPostLiked);
+                          },
                         ),
                         IconTextButton(
                           iconData: Icons.comment,
                           text: post.comments.length.toString(),
-                          onTap: () {},
-                        ),
-                        IconTextButton(
-                          iconData: Icons.share,
-                          text: post.noOfShares.toString(),
-                          onTap: () {},
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return CommentsModal();
+                              },
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -158,8 +176,10 @@ class SocialCard extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(right: 12),
                         child: IconButton(
-                          icon: const Icon(Icons.bookmark_border),
-                          onPressed: () {},
+                          icon: isPostSaved ? const Icon(Icons.bookmark_added) : const Icon(Icons.bookmark_border),
+                          onPressed: () {
+                            Provider.of<CurrentUser>(context, listen: false).toggleSavePost(post.id, !isPostSaved);
+                          },
                         ),
                       ),
                     ],
@@ -279,7 +299,6 @@ class IconTextButton extends StatelessWidget {
           icon: Icon(iconData),
           onPressed: onTap,
         ),
-        const SizedBox(width: 8.0),
         Text(text),
       ],
     );
