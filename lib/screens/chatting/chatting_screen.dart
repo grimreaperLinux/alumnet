@@ -64,7 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        actions: [Image.asset('assets/Images/cgc.jpeg')],
+        actions: [Image.asset('assets/images/cgc.jpeg')],
       ),
       body: Column(
         children: [
