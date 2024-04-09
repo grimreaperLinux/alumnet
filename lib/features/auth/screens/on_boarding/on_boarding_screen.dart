@@ -1,4 +1,5 @@
 import 'package:alumnet/features/auth/controllers/on_boarding_controller.dart';
+import 'package:alumnet/features/auth/screens/welcome/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
@@ -20,8 +21,9 @@ class OnBoardingScreen extends StatelessWidget {
             pages: controller.pages,
             liquidController: controller.controller,
             onPageChangeCallback: controller.onPageChangeCallback,
-            slideIconWidget: const Icon(Icons.arrow_back_ios),
-            enableSideReveal: true,
+            // slideIconWidget: const Icon(Icons.arrow_back_ios),
+            enableSideReveal: false,
+            enableLoop: false,
           ),
           Positioned(
             bottom: 60.0,
@@ -49,8 +51,8 @@ class OnBoardingScreen extends StatelessWidget {
             top: 50,
             right: 20,
             child: TextButton(
-              onPressed: () => controller.skip(),
-              child: const Text("Skip", style: TextStyle(color: Colors.grey)),
+              onPressed: () => Get.to(WelcomeScreen()),
+              child: const Text("Skip", style: TextStyle(color: Colors.black)),
             ),
           ),
           Obx(
