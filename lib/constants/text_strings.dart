@@ -1,12 +1,12 @@
 const String tAppName = 'AppName';
 const String tAppTagLine = 'AppTagLine';
 
-const String tOnBoardingTitle1 = 'OnBoardingTitle1';
-const String tOnBoardingTitle2 = 'OnBoardingTitle2';
-const String tOnBoardingTitle3 = 'OnBoardingTitle3';
-const String tOnBoardingSubTitle1 = 'OnBoardingSubTitle1';
-const String tOnBoardingSubTitle2 = 'OnBoardingSubTitle2';
-const String tOnBoardingSubTitle3 = 'OnBoardingSubTitle3';
+const String tOnBoardingTitle1 = 'Embrace Your Alumni Journey!';
+const String tOnBoardingTitle2 = 'Rediscover Your Alma Mater!';
+const String tOnBoardingTitle3 = 'Fostering Alumni Connections!';
+const String tOnBoardingSubTitle1 = 'Navigating Success Together';
+const String tOnBoardingSubTitle2 = 'Strengthening Alumni Relations';
+const String tOnBoardingSubTitle3 = 'Networking for Success';
 const String tOnBoardingCounter1 = '1/3';
 const String tOnBoardingCounter2 = '2/3';
 const String tOnBoardingCounter3 = '3/3';

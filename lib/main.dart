@@ -40,9 +40,11 @@ class MyApp extends StatelessWidget {
           theme: TAppTheme.lightTheme,
           darkTheme: TAppTheme.darkTheme,
           themeMode: ThemeMode.system,
-          home: WelcomeScreen(),
+          home: SplashScreen(),
           routes: {
-            PostCreationScreen.routename: (context) => PostCreationScreen(),
+            
+            PostCreationScreen.routename: (context) => PostCreationScreen()
+          ,
             SearchPage.routename: (context) => SearchPage(),
           },
         ),
