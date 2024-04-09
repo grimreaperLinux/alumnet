@@ -26,7 +26,11 @@ class User {
   });
 
   factory User.fromdummyData() {
-    User user = User(name: 'Aniket Raj', id: 'this_is_a_special_id', email: 'ani9431619703@gmail.com', username: 'grimreaperLinux');
+    User user = User(
+        name: 'Aniket Raj',
+        id: 'this_is_a_special_id',
+        email: 'ani9431619703@gmail.com',
+        username: 'grimreaperLinux');
     user.batch = '2024';
     user.about = 'Genius, Billionaire, Playboy, Philanthropist';
     user.branch = "DSAI";
@@ -70,8 +74,13 @@ class CurrentUser extends ChangeNotifier {
     );
 
     user.savedPosts = List<String>.from(userData['savedPosts'] ?? []);
-    _currentUser.add(user);
-
+    if (_currentUser.isEmpty) {
+      _currentUser.add(user);
+    } else {
+      _currentUser[0] = user;
+    }
+    // _currentUser.add(user);
+    notifyListeners();
     print(currentUser.savedPosts);
   }
 
