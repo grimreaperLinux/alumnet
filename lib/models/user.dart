@@ -61,6 +61,12 @@ class CurrentUser extends ChangeNotifier {
       id: userData['id'],
       email: userData['email'],
       instituteId: userData['instituteId'],
+      profilepic: userData.containsKey('profilepic')
+          ? userData['profilepic']
+          : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
+      about: userData.containsKey('about') ? userData['about'] : '',
+      batch: userData.containsKey('batch') ? userData['batch'] : '',
+      branch: userData.containsKey('branch') ? userData['branch'] : '',
     );
 
     user.savedPosts = List<String>.from(userData['savedPosts'] ?? []);
@@ -91,24 +97,19 @@ class CurrentUser extends ChangeNotifier {
     } catch (e) {
       print("Error toggling like for post: $e");
     }
-      profilepic: userData.containsKey('profilepic')?userData['profilepic']:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtvL6ttzTju01j4VLLzVJNVxjUyMe08UQt_5bdnyHjIQ&s',
-      about: userData.containsKey('about')?userData['about']:'',
-      batch: userData.containsKey('batch')?userData['batch']:'',
-      branch: userData.containsKey('branch')?userData['branch']:''
-    ));
   }
 
-  void updateUserData(about,profilepic,batch,branch){
-    if(about!=''){
-      currentUser.about=about;
+  void updateUserData(about, profilepic, batch, branch) {
+    if (about != '') {
+      currentUser.about = about;
     }
-    if(profilepic!=''){
+    if (profilepic != '') {
       currentUser.profilepic = profilepic;
     }
-    if(batch!=''){
+    if (batch != '') {
       currentUser.batch = batch;
     }
-    if(branch!=''){
+    if (branch != '') {
       currentUser.branch = branch;
     }
 
