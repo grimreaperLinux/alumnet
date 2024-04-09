@@ -1,8 +1,10 @@
 import 'package:alumnet/models/community.dart';
+import 'package:alumnet/models/user.dart';
 import 'package:alumnet/screens/community/batchList_screen.dart';
 import 'package:alumnet/screens/community/discussion_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CommunityPage extends StatefulWidget {
   @override
@@ -12,23 +14,10 @@ class CommunityPage extends StatefulWidget {
 class _CommunityPageState extends State<CommunityPage> {
   final TextEditingController _searchController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  List<Community> communityData = [];
 
   @override
   initState() {
     super.initState();
-    _fetchData();
-  }
-
-  void _fetchData() async {
-    QuerySnapshot<Map<String, dynamic>> querySnapshot =
-        await _firestore.collection('discussions').get();
-
-    setState(() {
-      communityData = querySnapshot.docs
-          .map((doc) => Community.fromMap(doc.data()))
-          .toList();
-    });
   }
 
   @override
@@ -50,12 +39,6 @@ class _CommunityPageState extends State<CommunityPage> {
                   contentPadding: EdgeInsets.symmetric(horizontal: 30),
                 ),
               ),
-              TextButton(
-                onPressed: () {
-                  addCommunitiesToFirebase();
-                },
-                child: Text('Add Communities to Firebase'),
-              ),
               SizedBox(height: 10),
               GridView.builder(
                 shrinkWrap: true,
@@ -64,7 +47,7 @@ class _CommunityPageState extends State<CommunityPage> {
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),
-                itemCount: 5, // Assuming there are 5 departments
+                itemCount: 3,
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
@@ -72,17 +55,13 @@ class _CommunityPageState extends State<CommunityPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => BatchList(
-                              branch: index == 3
-                                  ? "PhD"
-                                  : index == 4
-                                      ? "Faculty"
-                                      : index == 2
-                                          ? "ECE"
-                                          : index == 1
-                                              ? "CSE"
-                                              : index == 0
-                                                  ? "DSAI"
-                                                  : ""),
+                              branch: index == 2
+                                  ? "ECE"
+                                  : index == 1
+                                      ? "CSE"
+                                      : index == 0
+                                          ? "DSAI"
+                                          : ""),
                         ),
                       );
                     },
@@ -107,24 +86,45 @@ class _CommunityPageState extends State<CommunityPage> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: communityData.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              DiscussionScreen(community: communityData[index]),
-                        ),
+              StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('discussions')
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(),
                       );
-                    },
-                    child: CommunityBlock(communityData: communityData[index]),
-                  );
-                },
-              ),
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Center(child: Text("Be the first one to comment"));
+                    }
+                    final communityData = snapshot.data!.docs;
+                    final communities = communityData
+                        .map((doc) => Community.fromMap(
+                            doc.data() as Map<String, dynamic>))
+                        .toList();
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: communityData.length,
+                      itemBuilder: (context, index) {
+                        final community = communities[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DiscussionScreen(community: community),
+                              ),
+                            );
+                          },
+                          child: CommunityBlock(communityData: community),
+                        );
+                      },
+                    );
+                  })
             ],
           ),
         ),
@@ -155,16 +155,82 @@ class DepartmentBlock extends StatelessWidget {
         ],
       ),
       child: Center(
-        child: Text(text),
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
 }
 
-class CommunityBlock extends StatelessWidget {
+class CommunityBlock extends StatefulWidget {
   final Community communityData;
 
   CommunityBlock({required this.communityData});
+
+  @override
+  _CommunityBlockState createState() => _CommunityBlockState();
+}
+
+class _CommunityBlockState extends State<CommunityBlock> {
+  bool isMember = false;
+
+  @override
+  void initState() {
+    super.initState();
+    checkIfMember();
+  }
+
+  void checkIfMember() async {
+    final currentUser =
+        Provider.of<CurrentUser>(context, listen: false).currentUser;
+    final communityName = widget.communityData.name;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('discussions')
+        .doc(communityName)
+        .collection('members')
+        .doc(currentUser.id)
+        .get();
+
+    setState(() {
+      isMember = snapshot.exists;
+    });
+  }
+
+  void manipulateMemberList() async {
+    final _firestore = FirebaseFirestore.instance;
+    final currentUser =
+        Provider.of<CurrentUser>(context, listen: false).currentUser;
+    final communityName = widget.communityData.name;
+
+    try {
+      if (!isMember) {
+        await _firestore
+            .collection('discussions')
+            .doc(communityName)
+            .collection('members')
+            .doc(currentUser.id)
+            .set(currentUser.toMap());
+        print('User added to the community');
+      } else {
+        await _firestore
+            .collection('discussions')
+            .doc(communityName)
+            .collection('members')
+            .doc(currentUser.id)
+            .delete();
+        print('User removed from the community');
+      }
+      setState(() {
+        isMember = !isMember;
+      });
+    } catch (e) {
+      // Handle errors
+      print('Error manipulating member list: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -173,8 +239,9 @@ class CommunityBlock extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(10)),
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -185,125 +252,40 @@ class CommunityBlock extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      communityData.name,
+                      widget.communityData.name,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text('${communityData.activeMembers} Active Members',
-                        style: TextStyle(fontSize: 12)),
+                    Text(
+                      '${widget.communityData.activeMembers} Active Members',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ],
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: manipulateMemberList,
                   child: Text(
-                    "Join",
-                    style: TextStyle(color: Colors.white),
+                    isMember ? "Joined" : "Join",
+                    style: TextStyle(
+                      color: isMember ? Colors.black : Colors.white,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(60, 30),
-                    backgroundColor: Colors.black,
+                    minimumSize: Size(80, 30),
+                    backgroundColor: isMember ? Colors.white : Colors.black,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
               ],
             ),
-            Text(communityData.bio),
+            Text(widget.communityData.bio),
           ],
         ),
       ),
     );
-  }
-}
-
-void addUsersToFirebase() async {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  try {
-    List<Map<String, dynamic>> userData = [
-      {
-        "name": 'Aniket Raj',
-        "profilepic":
-            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-        "username": '20bds007',
-        "batch": '2024',
-        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
-      },
-      {
-        "name": 'Aman Gupta',
-        "profilepic":
-            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-        "username": '20bds024',
-        "batch": '2024',
-        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
-      },
-      {
-        "name": 'Chirag Mittal',
-        "profilepic":
-            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-        "username": '20bds017',
-        "batch": '2024',
-        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
-      },
-      {
-        "name": 'Devansh Purvar',
-        "profilepic":
-            'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D',
-        "username": '20bds018',
-        "batch": '2024',
-        "about": 'FatAss, Genius, Billionaire, Playboy, Philanthropist',
-      },
-    ];
-
-    for (var userData in userData) {
-      String collectionPath = 'users/DSAI/batches/Batch 2024';
-      String documentID = userData['username'];
-      await _firestore
-          .collection(collectionPath + '/users')
-          .doc(documentID)
-          .set(userData);
-    }
-  } catch (error) {
-    print("Error:$error");
-  }
-}
-
-void addCommunitiesToFirebase() async {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  try {
-    List<Map<String, dynamic>> discussionData = [
-      {
-        "name": "Web 3",
-        "bio":
-            "The go-to place for web3 enthusiasts to indulge in juicy gossip.",
-        "image": "",
-        "activeMembers": 100,
-      },
-      {
-        "name": "Open Source",
-        "bio":
-            "The go-to place for open source enthusiasts to indulge in juicy gossip.",
-        "image": "",
-        "activeMembers": 100,
-      },
-      {
-        "name": "Apple Ecosystem",
-        "bio": "The go-to place for apple fanboys to indulge in juicy gossip.",
-        "image": "",
-        "activeMembers": 120,
-      }
-    ];
-
-    for (var discussion in discussionData) {
-      String collectionPath = 'discussions/';
-      String documentID = discussion['name'];
-      await _firestore
-          .collection(collectionPath)
-          .doc(documentID)
-          .set(discussion);
-    }
-  } catch (e) {
-    print(e);
   }
 }

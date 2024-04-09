@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 class DiscussionScreen extends StatefulWidget {
   final Community community;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
+  List membersData = [];
   DiscussionScreen({required this.community});
 
   @override
@@ -21,42 +21,35 @@ class DiscussionScreen extends StatefulWidget {
 
 class _DiscussionScreenState extends State<DiscussionScreen> {
   List<Discussion> postsData = [];
-  List membersData = [];
+
   bool isMember = false;
   @override
   void initState() {
     super.initState();
     checkIfMember();
-    _fetchData();
   }
 
-  void _fetchData() async {
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-    QuerySnapshot<Map<String, dynamic>> querySnapshot = await _firestore
-        .collection('discussions')
-        .doc(widget.community.name)
-        .collection('posts')
-        .get();
-    setState(() {
-      postsData = querySnapshot.docs
-          .map((doc) => Discussion.fromMap(doc.data()))
-          .toList();
-    });
+  void checkIfMember() async {
+    final currentUser =
+        Provider.of<CurrentUser>(context, listen: false).currentUser;
+    final communityName = widget.community.name;
 
-    // QuerySnapshot<Map<String, dynamic>> querySnapshot2 = await _firestore
-    //     .collection('discussions')
-    //     .doc(widget.community.name)
-    //     .collection('members')
-    //     .get();
-    // setState(() {
-    //   membersData = querySnapshot2.docs.map((doc) => doc.data()).toList();
-    // });
+    final snapshot = await FirebaseFirestore.instance
+        .collection('discussions')
+        .doc(communityName)
+        .collection('members')
+        .doc(currentUser.id)
+        .get();
+
+    setState(() {
+      isMember = snapshot.exists;
+    });
   }
 
   void manipulateMemberList() async {
     final _firestore = FirebaseFirestore.instance;
-    final String currentUserID =
-        Provider.of<CurrentUser>(context, listen: false).currentUser.id;
+    final currentUser =
+        Provider.of<CurrentUser>(context, listen: false).currentUser;
     final communityName = widget.community.name;
 
     try {
@@ -65,54 +58,24 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
             .collection('discussions')
             .doc(communityName)
             .collection('members')
-            .doc(currentUserID)
-            .set({'userId': currentUserID});
-
+            .doc(currentUser.id)
+            .set(currentUser.toMap());
         print('User added to the community');
-        setState(() {
-          isMember = true;
-        });
       } else {
         await _firestore
             .collection('discussions')
             .doc(communityName)
             .collection('members')
-            .doc(currentUserID)
+            .doc(currentUser.id)
             .delete();
-
         print('User removed from the community');
-        setState(() {
-          isMember = false;
-        });
       }
+      setState(() {
+        isMember = !isMember;
+      });
     } catch (e) {
       // Handle errors
       print('Error manipulating member list: $e');
-    }
-  }
-
-  void checkIfMember() async {
-    print(isMember);
-    final _firestore = FirebaseFirestore.instance;
-    final User user =
-        Provider.of<CurrentUser>(context as BuildContext, listen: false)
-            .currentUser;
-    final String communityName = widget.community.name;
-    try {
-      final snapshot = await _firestore
-          .collection('discussions')
-          .doc(communityName)
-          .collection('members')
-          .where('userID', isEqualTo: user.id)
-          .get();
-
-      if (snapshot.docs.isNotEmpty) {
-        isMember = true;
-      } else {
-        isMember = false;
-      }
-    } catch (e) {
-      print(e);
     }
   }
 
@@ -131,12 +94,6 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
             ),
             Spacer(),
             IconButton(icon: Icon(Icons.search), onPressed: () {}),
-            // IconButton(
-            //     icon: Icon(Icons.people),
-            //     onPressed: () {
-            //       Scaffold.of(context).openDrawer();
-            //     }),
-            // IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
           ],
         ),
         actions: [
@@ -166,23 +123,27 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
               ),
             ),
             StreamBuilder(
-                stream:
-                    FirebaseFirestore.instance.collection('Users').snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('discussions')
+                    .doc(widget.community.name)
+                    .collection('members')
+                    .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
                       child: CircularProgressIndicator(),
                     );
                   }
-                  membersData = snapshot.data!.docs;
+
+                  widget.membersData = snapshot.data!.docs;
                   return ListView.builder(
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
-                    itemCount: membersData.length,
+                    itemCount: widget.membersData.length,
                     itemBuilder: (context, index) {
-                      final data = membersData[index];
+                      final data = widget.membersData[index];
                       return ListTile(
-                        title: Text(data['fullName']),
+                        title: Text(data['name']),
                         leading: CircleAvatar(
                           child: Icon(Icons.person),
                           radius: 25,
@@ -236,10 +197,10 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold),
                           ),
-                          Text(
-                            "${membersData.length} active members",
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
+                          // Text(
+                          //   "${widget.membersData.length} active members",
+                          //   style: TextStyle(fontSize: 12, color: Colors.grey),
+                          // ),
                         ],
                       ),
                       Spacer(),
@@ -253,6 +214,7 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                               color: isMember ? Colors.black : Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
+                          minimumSize: Size(80, 50),
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           backgroundColor:
                               isMember ? Colors.white : Colors.black,
@@ -284,7 +246,7 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                                   community: widget.community)));
                     },
                     child: Text(
-                      "Add Posts",
+                      "Add Post",
                       style: TextStyle(color: Colors.black),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -355,11 +317,14 @@ class _DiscussionScreenState extends State<DiscussionScreen> {
                             builder: (context) => DiscussionDetailScreen(
                               discussion: postsData[index],
                               community: widget.community,
+                              currentLevel: 0,
                             ),
                           ),
                         );
                       },
-                      child: DiscussionPost(discussion: postsData[index]),
+                      child: DiscussionPost(
+                          community: widget.community,
+                          discussion: postsData[index]),
                     );
                   },
                 );

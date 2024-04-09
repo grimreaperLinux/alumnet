@@ -4,24 +4,33 @@ import "package:alumnet/models/user.dart";
 final sampleUser = User.fromDummyData();
 
 class Discussion {
+  final String id;
   final User postedBy;
   final DateTime postedAt;
   final String headline;
-  final DiscussionContent content;
+  DiscussionContent? content;
+  final String? parentId;
+  List<String>? likes;
 
   Discussion({
+    required this.id,
     required this.postedBy,
     required this.postedAt,
     required this.headline,
-    required this.content,
+    this.content,
+    this.parentId,
+    this.likes,
   });
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'postedBy': postedBy.toMap(),
       'postedAt': postedAt.toIso8601String(),
       'headline': headline,
-      'content': content.toMap(),
+      'content': content?.toMap(),
+      'parentId': parentId,
+      'likes': likes,
     };
   }
 
@@ -29,18 +38,22 @@ class Discussion {
     if (map == null) {
       throw ArgumentError('Map is null');
     }
+    final String id = map['id'] ?? '';
     final User postedBy = User.fromMap(map['postedBy']);
     final DateTime postedAt = DateTime.parse(map['postedAt']);
     final String headline = map['headline'] ?? '';
     final DiscussionContent content =
         DiscussionContent.fromMap(map['content'] ?? {});
+    final List<String>? likes = List<String>.from(map['likes'] ?? []);
 
     return Discussion(
-      postedBy: postedBy,
-      postedAt: postedAt,
-      headline: headline,
-      content: content,
-    );
+        id: id,
+        postedBy: postedBy,
+        postedAt: postedAt,
+        headline: headline,
+        content: content,
+        parentId: map['parentId'],
+        likes: likes);
   }
 }
 
@@ -133,6 +146,7 @@ DiscussionContent discussionContent =
     DiscussionContent(elements: contentElements);
 
 Discussion sampleDiscussion = Discussion(
+  id: "sdasdasdsds",
   postedBy: sampleUser,
   postedAt: DateTime.now(),
   headline: "NFTs in Web3.0 era: Digital Ownerships and tokenisation of assets",

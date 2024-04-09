@@ -78,7 +78,8 @@ class _AlumnetHomeState extends State<AlumnetHome> {
 
   @override
   Widget build(BuildContext context) {
-    User currentUser = Provider.of<CurrentUser>(context, listen: true).currentUser;
+    User currentUser =
+        Provider.of<CurrentUser>(context, listen: true).currentUser;
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -162,18 +163,6 @@ class _AlumnetHomeState extends State<AlumnetHome> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Container(
-                //   child: GestureDetector(
-                // child: CircleAvatar(
-                //   radius: 25,
-                //   backgroundImage: NetworkImage(
-                //       'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw='),
-                // ),
-                //     onTap: () {
-                //       Scaffold.of(context).openDrawer();
-                //     },
-                //   ),
-                // ),
                 Container(
                   child: Builder(
                     builder: (context) => TextButton(
@@ -192,7 +181,8 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                   IconButton(
                     icon: const Icon(Icons.refresh_rounded),
                     onPressed: () {
-                      Provider.of<PostList>(context, listen: false).refreshPosts();
+                      Provider.of<PostList>(context, listen: false)
+                          .refreshPosts();
                     },
                   ),
                 IconButton(

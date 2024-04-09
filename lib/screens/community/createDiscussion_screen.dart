@@ -108,6 +108,7 @@ class _CreateDiscussionScreenState extends State<CreateDiscussionScreen> {
         DiscussionContent(elements: elements);
 
     final discussionData = Discussion(
+      id: headline,
       postedBy: user,
       postedAt: DateTime.now(),
       headline: headline,
