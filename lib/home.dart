@@ -109,7 +109,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
               title: Text("Profile"),
               leading: Icon(Icons.person),
               onTap: () {
-                onTabPress(5);
+                onTabPress(4);
               },
             ),
             ListTile(
