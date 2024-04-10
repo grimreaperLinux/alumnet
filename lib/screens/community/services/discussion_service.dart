@@ -1,3 +1,4 @@
+import 'package:alumnet/models/discussion.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DiscussionService {
@@ -28,6 +29,18 @@ class DiscussionService {
       });
     } catch (e) {
       print('Error removing like from discussion: $e');
+      throw e;
+    }
+  }
+
+  Future<void> addComment(
+      String parentId, Discussion comment, String path) async {
+    try {
+      await _firestore.collection(path).doc(parentId).update({
+        'comments': FieldValue.arrayUnion([comment.toMap()]),
+      });
+    } catch (e) {
+      print('Error adding comment to discussion: $e');
       throw e;
     }
   }

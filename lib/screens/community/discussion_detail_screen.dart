@@ -1,6 +1,7 @@
 import 'package:alumnet/models/community.dart';
 import 'package:alumnet/models/discussion.dart';
 import 'package:alumnet/models/user.dart';
+import 'package:alumnet/screens/community/services/discussion_service.dart';
 import 'package:alumnet/widgets/feed_post.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -93,22 +94,21 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     getContent(),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    //   children: <Widget>[
-                    //     IconTextButton(
-                    //       iconData: Icons.thumb_up,
-                    //       text: "21",
-                    //       onTap: () {},
-                    //     ),
-                    //     IconTextButton(
-                    //       iconData: Icons.comment,
-                    //       text: "20",
-                    //       onTap: () {},
-                    //     ),
-                    //   ],
-                    // ),
-
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        IconTextButton(
+                          iconData: Icons.thumb_up,
+                          text: "21",
+                          onTap: () {},
+                        ),
+                        IconTextButton(
+                          iconData: Icons.comment,
+                          text: "20",
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
                     StreamBuilder(
                         stream: FirebaseFirestore.instance
                             .collection(widget.path)
@@ -141,6 +141,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                               final postedBy = commentData['postedBy'];
                               final postedAt = commentData['postedAt'];
                               final headline = commentData['headline'];
+                              final commentsChildren = commentData['comments'];
                               final user = User(
                                   name: postedBy['name'],
                                   id: postedBy['id'],
@@ -150,74 +151,35 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                DiscussionDetailScreen(
-                                                    discussion: Discussion(
-                                                        id: comment['id'],
-                                                        postedBy: user,
-                                                        postedAt:
-                                                            DateTime.parse(
-                                                                postedAt),
-                                                        headline: headline,
-                                                        parentId: commentData[
-                                                            'parentId']),
-                                                    community: widget.community,
-                                                    path: widget.path)));
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            DiscussionDetailScreen(
+                                          discussion: Discussion(
+                                            id: comment['id'],
+                                            postedBy: user,
+                                            postedAt: DateTime.parse(postedAt),
+                                            headline: headline,
+                                            parentId: commentData['parentId'],
+                                          ),
+                                          community: widget.community,
+                                          path: widget.path,
+                                        ),
+                                      ),
+                                    );
                                   },
-                                  child: Row(
+                                  child: Column(
                                     children: [
-                                      CircleAvatar(
-                                        backgroundImage: NetworkImage(
-                                            postedBy['profilepic']),
-                                        radius: 20,
-                                      ),
-                                      SizedBox(
-                                        width: 5,
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text(
-                                                postedBy['name'],
-                                                style: TextStyle(fontSize: 12),
-                                              ),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                timeago.format(
-                                                    DateTime.parse(postedAt),
-                                                    locale: 'en_short'),
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ],
+                                      CommentBlock(
+                                        commentData: commentData,
+                                      ), // Initial CommentBlock
+                                      for (var comment in commentsChildren)
+                                        Padding(
+                                          padding: EdgeInsets.only(left: 50),
+                                          child: CommentBlock(
+                                            commentData: comment,
                                           ),
-                                          Text(comment['headline']),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceEvenly,
-                                            children: <Widget>[
-                                              IconTextButton(
-                                                iconData: Icons.thumb_up,
-                                                text: "",
-                                                onTap: () {},
-                                              ),
-                                              IconTextButton(
-                                                iconData: Icons.comment,
-                                                text: "",
-                                                onTap: () {},
-                                              ),
-                                            ],
-                                          ),
-                                          Divider(),
-                                        ],
-                                      ),
+                                        ), // Additional CommentBlocks
                                     ],
                                   ),
                                 ),
@@ -245,6 +207,7 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                             child: Container(
                               height: 700,
                               child: Column(children: [
+                                CommentBlock(commentData: widget.discussion),
                                 Row(
                                   children: [
                                     TextButton(
@@ -368,9 +331,69 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
           .collection(collectionPath)
           .doc(commentID)
           .set(comment.toMap());
+
+      await DiscussionService().addComment(parentId, comment, widget.path);
       print('Comment added successfully.');
     } catch (e) {
       print('Error adding comment: $e');
     }
+  }
+}
+
+class CommentBlock extends StatelessWidget {
+  const CommentBlock({super.key, required this.commentData});
+  final commentData;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        CircleAvatar(
+          backgroundImage: NetworkImage(commentData['postedBy']['profilepic']),
+          radius: 20,
+        ),
+        SizedBox(
+          width: 5,
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  commentData['postedBy']['name'],
+                  style: TextStyle(fontSize: 12),
+                ),
+                SizedBox(width: 5),
+                Text(
+                  timeago.format(DateTime.parse(commentData['postedAt']),
+                      locale: 'en_short'),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            Text(commentData['headline']),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                IconTextButton(
+                  iconData: Icons.thumb_up,
+                  text: "",
+                  onTap: () {},
+                ),
+                IconTextButton(
+                  iconData: Icons.comment,
+                  text: "",
+                  onTap: () {},
+                ),
+              ],
+            ),
+            Divider(),
+          ],
+        ),
+      ],
+    );
   }
 }

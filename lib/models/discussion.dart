@@ -8,9 +8,10 @@ class Discussion {
   final User postedBy;
   final DateTime postedAt;
   final String headline;
-  DiscussionContent? content;
+  final DiscussionContent? content;
   final String? parentId;
-  List<String>? likes;
+  final List<String> likes;
+  final List<Discussion> comments;
 
   Discussion({
     required this.id,
@@ -19,8 +20,10 @@ class Discussion {
     required this.headline,
     this.content,
     this.parentId,
-    this.likes,
-  });
+    List<String>? likes,
+    List<Discussion>? comments,
+  })  : likes = likes ?? [],
+        comments = comments ?? [];
 
   Map<String, dynamic> toMap() {
     return {
@@ -31,6 +34,7 @@ class Discussion {
       'content': content?.toMap(),
       'parentId': parentId,
       'likes': likes,
+      'comments': comments.map((comment) => comment.toMap()).toList(),
     };
   }
 
@@ -44,16 +48,21 @@ class Discussion {
     final String headline = map['headline'] ?? '';
     final DiscussionContent content =
         DiscussionContent.fromMap(map['content'] ?? {});
-    final List<String>? likes = List<String>.from(map['likes'] ?? []);
+    final List<String> likes = List<String>.from(map['likes'] ?? []);
+    final List<Discussion> comments = List<Discussion>.from(
+        (map['comments'] ?? [])
+            .map((commentMap) => Discussion.fromMap(commentMap)));
 
     return Discussion(
-        id: id,
-        postedBy: postedBy,
-        postedAt: postedAt,
-        headline: headline,
-        content: content,
-        parentId: map['parentId'],
-        likes: likes);
+      id: id,
+      postedBy: postedBy,
+      postedAt: postedAt,
+      headline: headline,
+      content: content,
+      parentId: map['parentId'],
+      likes: likes,
+      comments: comments,
+    );
   }
 }
 
