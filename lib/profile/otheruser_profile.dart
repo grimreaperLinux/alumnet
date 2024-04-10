@@ -160,7 +160,7 @@ class _OtherProfileState extends State<OtherProfile> {
                                 child: Icon(Icons.calendar_month),
                               ),
                               Text(
-                                'Batch ${currentUser.batch}',
+                                'Batch ${currentUser.batch} ${currentUser.branch!=''?'-':''} ${currentUser.branch!=''?currentUser.branch:''}',
                                 style:
                                     TextStyle(color: Colors.grey, fontSize: 15),
                               ),
