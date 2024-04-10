@@ -263,7 +263,7 @@ class _ExperienceSectionState extends State<ExperienceSection> {
                         ),
                         child: ListTile(
                           contentPadding: EdgeInsets.symmetric(),
-                          title: Text(currentListItem['organization_name']),
+                          title: Text('${currentListItem['organization_name']} - ${currentListItem['position']}'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -822,7 +822,7 @@ class EducationSection extends StatelessWidget {
                         ),
                         child: ListTile(
                           contentPadding: EdgeInsets.symmetric(),
-                          title: Text(currentListItem['organization_name']),
+                          title: Text('${currentListItem['organization_name']} - ${currentListItem['position']}'),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
