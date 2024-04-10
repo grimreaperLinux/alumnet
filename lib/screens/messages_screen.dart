@@ -11,29 +11,11 @@ class MessagesPage extends StatefulWidget {
 }
 
 class _MessagesPageState extends State<MessagesPage> {
-  final loggedInUserId = '8BICx4WqZatmhFNsgmDZ';
   TextEditingController _controller = TextEditingController();
   Timer? _debounce;
   FocusNode _focusNode = FocusNode();
   var isFocus = false;
   var searchQueryText = "";
-
-  final List<Map<String, dynamic>> users = [
-    {
-      "user": User(
-          id: "45",
-          email: "chirag@gmail.com",
-          about: 'Something',
-          batch: '2024',
-          name: "aniket",
-          username: 'aniket',
-          profilepic:
-              'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw=',
-          branch: 'DSAI'),
-      "lastChatDate": DateTime.now().subtract(Duration(days: 1)),
-      "lastMessage": 'Hello there!',
-    }
-  ];
 
   @override
   void initState() {
@@ -229,6 +211,30 @@ class FrequentChatItem extends StatelessWidget {
     Key? key,
   }) : super(key: key);
 
+  Future<void>_updateData(chat_id)async{
+    final updateData = {
+      "${chattingWithUser.id}": {
+          "name": chattingWithUser.name,
+          "username": chattingWithUser.username,
+          "profilepic": chattingWithUser.profilepic,
+          "batch": chattingWithUser.batch,
+          "branch": chattingWithUser.branch,
+          "about": chattingWithUser.about
+        },
+        "${currentUser.id}": {
+          "name": currentUser.name,
+          "username": currentUser.instituteId,
+          "profilepic": currentUser.profilepic,
+          "batch": currentUser.batch,
+          "branch": currentUser.branch,
+          "about": currentUser.about
+        }
+    };
+
+    print(updateData);
+    await FirebaseFirestore.instance.collection('chat').doc(chat_id).update(updateData);
+  }
+
   Future<String> _createOrRetrieveChat() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('chat')
@@ -236,7 +242,7 @@ class FrequentChatItem extends StatelessWidget {
     List<QueryDocumentSnapshot> documents = querySnapshot.docs;
 
     if (documents.isEmpty) {
-      final createdObject =
+            final createdObject =
           await FirebaseFirestore.instance.collection('chat').add({
         "users": [currentUser.id, chattingWithUser.id],
         "${chattingWithUser.id}": {
@@ -262,6 +268,7 @@ class FrequentChatItem extends StatelessWidget {
 
       return createdObject.id;
     } else {
+      _updateData(documents[0].id);
       return documents[0].id;
     }
   }
@@ -274,6 +281,9 @@ class FrequentChatItem extends StatelessWidget {
         var chatIdToPass = chatId;
         if (chatIdToPass == '') {
           chatIdToPass = await _createOrRetrieveChat();
+        }
+        else{
+          _updateData(chatIdToPass);
         }
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => ChatScreen(
