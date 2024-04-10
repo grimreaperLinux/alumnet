@@ -39,27 +39,44 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
               ),
             ),
             SizedBox(height: 20),
-            Row(
-              children: [
-                Text('Only For Same Batch'),
-                Spacer(),
-                Switch(
-                  value: _onlyForSameBatch,
-                  onChanged: (value) {
-                    setState(() {
-                      _onlyForSameBatch = value;
-                    });
-                  },
-                ),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     Text('Only For Same Batch'),
+            //     Spacer(),
+            //     Switch(
+            //       value: _onlyForSameBatch,
+            //       onChanged: (value) {
+            //         setState(() {
+            //           _onlyForSameBatch = value;
+            //         });
+            //       },
+            //     ),
+            //   ],
+            // ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                addCommunity();
-                Navigator.pop(context);
-              },
-              child: Text('Create Community'),
+            Container(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all<Color>(
+                      Colors.black), // Change button background color
+                  foregroundColor: MaterialStateProperty.all<Color>(
+                      Colors.white), // Change text color
+                  padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                    EdgeInsets.symmetric(vertical: 16), // Adjust button padding
+                  ),
+                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero, // No border radius
+                    ),
+                  ),
+                ),
+                onPressed: () {
+                  addCommunity();
+                  Navigator.pop(context);
+                },
+                child: Text('Create Community'),
+              ),
             ),
           ],
         ),

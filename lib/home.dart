@@ -132,10 +132,10 @@ class _AlumnetHomeState extends State<AlumnetHome> {
               title: Text("Create a Community"),
               leading: Icon(Icons.add),
               onTap: () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => CreateCommunityScreen()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => CreateCommunityScreen()));
               },
             ),
             ListTile(

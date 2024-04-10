@@ -99,12 +99,12 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                       children: <Widget>[
                         IconTextButton(
                           iconData: Icons.thumb_up,
-                          text: "21",
+                          text: widget.discussion.likes.length.toString(),
                           onTap: () {},
                         ),
                         IconTextButton(
                           iconData: Icons.comment,
-                          text: "20",
+                          text: widget.discussion.comments.length.toString(),
                           onTap: () {},
                         ),
                       ],
@@ -207,7 +207,6 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                             child: Container(
                               height: 700,
                               child: Column(children: [
-                                CommentBlock(commentData: widget.discussion),
                                 Row(
                                   children: [
                                     TextButton(
@@ -215,12 +214,19 @@ class _DiscussionDetailViewState extends State<DiscussionDetailScreen> {
                                           Navigator.pop(context);
                                         },
                                         child: Text("Cancel")),
+                                    SizedBox(width: 100),
                                     Text(
                                       "Reply",
                                       style: TextStyle(
                                           fontWeight: FontWeight.w300),
                                     )
                                   ],
+                                ),
+                                Divider(),
+                                Padding(
+                                  padding: EdgeInsets.all(10),
+                                  child: CommentBlock(
+                                      commentData: widget.discussion.toMap()),
                                 ),
                                 Divider(),
                                 Padding(
@@ -380,12 +386,13 @@ class CommentBlock extends StatelessWidget {
               children: <Widget>[
                 IconTextButton(
                   iconData: Icons.thumb_up,
-                  text: "",
+                  text: commentData['likes'].length.toString(),
                   onTap: () {},
                 ),
+                SizedBox(width: 30),
                 IconTextButton(
                   iconData: Icons.comment,
-                  text: "",
+                  text: commentData['comments'].length.toString(),
                   onTap: () {},
                 ),
               ],
