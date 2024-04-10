@@ -39,7 +39,6 @@ class _AlumnetHomeState extends State<AlumnetHome> {
     HomePage(),
     SearchPage(),
     CommunityPage(),
-    NotificationsPage(),
     MessagesPage(),
     Profile()
   ];
@@ -67,7 +66,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
         _selectedTab = index;
       });
       changeScreen(index);
-      if (index <= 4) {
+      if (index <= 3) {
         _icons[index].status!.change(true);
         Future.delayed(const Duration(seconds: 1), () {
           _icons[index].status!.change(false);
@@ -98,7 +97,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                     color: Colors.white,
                   ),
                   Text(
-                    'Aman Gupta',
+                    currentUser.name,
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -106,7 +105,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                     ),
                   ),
                   Text(
-                    '@20bds024',
+                    currentUser.instituteId,
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white.withOpacity(0.8),
@@ -119,7 +118,7 @@ class _AlumnetHomeState extends State<AlumnetHome> {
               title: Text("Profile"),
               leading: Icon(Icons.person),
               onTap: () {
-                onTabPress(5);
+                onTabPress(4);
               },
             ),
             ListTile(
@@ -133,24 +132,24 @@ class _AlumnetHomeState extends State<AlumnetHome> {
               title: Text("Create a Community"),
               leading: Icon(Icons.add),
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => CreateCommunityScreen()));
+                // Navigator.push(
+                //     context,
+                //     MaterialPageRoute(
+                //         builder: (context) => CreateCommunityScreen()));
               },
             ),
             ListTile(
-              title: Text("Merchandise"),
-              leading: Icon(Icons.shopping_bag),
+              title: Text("View Saved Posts"),
+              leading: Icon(Icons.save_rounded),
               onTap: () {
                 // Handle merchandise tap
               },
             ),
             ListTile(
-              title: Text("Settings"),
-              leading: Icon(Icons.settings),
+              title: Text("Logout"),
+              leading: Icon(Icons.logout),
               onTap: () {
-                // Handle settings tap
+                AuthRepo.instance.logout();
               },
             ),
           ],
@@ -164,18 +163,17 @@ class _AlumnetHomeState extends State<AlumnetHome> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  child: Builder(
-                    builder: (context) => TextButton(
-                      onPressed: () {
-                        Scaffold.of(context).openDrawer();
-                      },
+                  child: Builder(builder: (context) {
+                    return GestureDetector(
                       child: CircleAvatar(
                         radius: 25,
-                        backgroundImage: NetworkImage(
-                            'https://media.istockphoto.com/id/1432226243/photo/happy-young-woman-of-color-smiling-at-the-camera-in-a-studio.jpg?s=612x612&w=0&k=20&c=rk75Rl4PTtXbEyj7RgSz_pJPlgEpUEsgcJVNGQZbrMw='),
+                        backgroundImage: NetworkImage(currentUser.profilepic),
                       ),
-                    ),
-                  ),
+                      onTap: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    );
+                  }),
                 ),
                 if (_index == 0)
                   IconButton(
@@ -185,12 +183,6 @@ class _AlumnetHomeState extends State<AlumnetHome> {
                           .refreshPosts();
                     },
                   ),
-                IconButton(
-                  icon: const Icon(Icons.verified_user),
-                  onPressed: () {
-                    AuthRepo.instance.logout();
-                  },
-                ),
               ],
             ),
           ),

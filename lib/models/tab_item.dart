@@ -13,7 +13,6 @@ class TabItem {
     TabItem(stateMachine: "HOME_interactivity", artboard: "HOME"),
     TabItem(stateMachine: "SEARCH_Interactivity", artboard: "SEARCH"),
     TabItem(stateMachine: "USER_Interactivity", artboard: "USER"),
-    TabItem(stateMachine: "BELL_Interactivity", artboard: "BELL"),
     TabItem(stateMachine: "CHAT_Interactivity", artboard: "CHAT"),
   ];
 }

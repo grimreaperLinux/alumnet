@@ -1,7 +1,7 @@
 import "package:alumnet/models/comment.dart";
 import "package:alumnet/models/user.dart";
 
-final sampleUser = User.fromDummyData();
+final sampleUser = User.fromdummyData();
 
 class Discussion {
   final String id;

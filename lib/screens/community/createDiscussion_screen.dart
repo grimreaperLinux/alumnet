@@ -3,6 +3,7 @@ import 'package:alumnet/models/discussion.dart';
 import 'package:alumnet/models/user.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CreateDiscussionScreen extends StatefulWidget {
   final Community community;
@@ -100,7 +101,7 @@ class _CreateDiscussionScreenState extends State<CreateDiscussionScreen> {
 
   void addDiscussion() async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-    final User user = User.fromDummyData();
+    final User user = Provider.of(context, listen: false).currentUser;
     List<DiscussionElement> elements = [
       DiscussionElement(type: ContentType.text, value: content)
     ];
